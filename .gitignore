@@ -1,0 +1,28 @@
+# goland
+.idea/
+
+# run
+.run/
+
+# bin
+bin/
+
+# macos
+.DS_Store
+
+# local env files
+.env
+env.bash
+env.sh
+env.zsh
+env.fish
+
+# ssl
+configs/ssl/*
+
+# local mongo and redis volumes
+deployments/redis/volumes
+
+# test
+cover.html
+cover.out

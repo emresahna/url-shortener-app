@@ -1,0 +1,20 @@
+package postgres
+
+import (
+	"context"
+	"fmt"
+	"github.com/EmreSahna/url-shortener-app/config"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func NewDBClient(cfg config.PostgresConfig) (*pgxpool.Pool, error) {
+	connDSN := fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s pool_max_conns=%d pool_min_conns=%d",
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database, cfg.MaxConn, cfg.MinConn)
+
+	conn, err := pgxpool.New(context.Background(), connDSN)
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
