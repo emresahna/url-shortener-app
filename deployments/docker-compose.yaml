@@ -1,4 +1,3 @@
-version: '3.9'
 services:
 #  app:
 #    container_name: url-shortener-app
@@ -25,6 +24,7 @@ services:
       - app_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts:/docker-entrypoint-initdb.d
 
   redis:
     container_name: url-shortener-redis

@@ -5,19 +5,20 @@
 package sqlc
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Url struct {
-	ID            int32
+	ID            uuid.UUID
 	OriginalUrl   string
 	ShortenedCode string
-	UserID        int32
+	UserID        uuid.UUID
 	CreatedAt     pgtype.Timestamptz
 }
 
 type User struct {
-	ID        int32
+	ID        uuid.UUID
 	Username  string
 	CreatedAt pgtype.Timestamptz
 }

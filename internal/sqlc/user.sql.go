@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -29,7 +31,7 @@ WHERE id = $1
 `
 
 // Get user by user id
-func (q *Queries) GetUserByUserID(ctx context.Context, id int32) (User, error) {
+func (q *Queries) GetUserByUserID(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByUserID, id)
 	var i User
 	err := row.Scan(&i.ID, &i.Username, &i.CreatedAt)

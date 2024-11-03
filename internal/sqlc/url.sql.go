@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 const createURL = `-- name: CreateURL :one
@@ -18,7 +20,7 @@ RETURNING id, original_url, shortened_code, user_id, created_at
 type CreateURLParams struct {
 	OriginalUrl   string
 	ShortenedCode string
-	UserID        int32
+	UserID        uuid.UUID
 }
 
 // Create a new shortened URL for a specific user
@@ -62,7 +64,7 @@ WHERE user_id = $1
 `
 
 // Get all URLs created by a specific user
-func (q *Queries) GetURLsByUserID(ctx context.Context, userID int32) ([]Url, error) {
+func (q *Queries) GetURLsByUserID(ctx context.Context, userID uuid.UUID) ([]Url, error) {
 	rows, err := q.db.Query(ctx, getURLsByUserID, userID)
 	if err != nil {
 		return nil, err

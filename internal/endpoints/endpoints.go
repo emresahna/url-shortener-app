@@ -1,15 +1,16 @@
 package endpoints
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/service"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 )
 
 type Endpoints interface {
+	GetUserHandler(w http.ResponseWriter, r *http.Request)
 	CreateUserHandler(w http.ResponseWriter, r *http.Request)
 	UrlShortenerHandler(w http.ResponseWriter, r *http.Request)
 }
@@ -36,6 +37,20 @@ func (e *endpoints) EncodeResponse(w http.ResponseWriter, res interface{}) {
 	json.NewEncoder(w).Encode(res)
 }
 
+func (e *endpoints) GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	var userId string
+	userId = chi.URLParam(r, "userID")
+
+	resp, err := e.s.GetUser(r.Context(), userId)
+	if err != nil {
+		e.EncodeResponse(w, err)
+		return
+	}
+
+	e.EncodeResponse(w, resp)
+	return
+}
+
 func (e *endpoints) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateUserRequest
 	err := e.DecodeRequest(r.Body, &req)
@@ -43,7 +58,7 @@ func (e *endpoints) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := e.s.CreateUser(context.TODO(), req)
+	resp, err := e.s.CreateUser(r.Context(), req)
 	if err != nil {
 		e.EncodeResponse(w, err)
 		return
@@ -60,7 +75,7 @@ func (e *endpoints) UrlShortenerHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	resp, err := e.s.ShortenURL(context.TODO(), req)
+	resp, err := e.s.ShortenURL(r.Context(), req)
 	if err != nil {
 		e.EncodeResponse(w, err)
 		return

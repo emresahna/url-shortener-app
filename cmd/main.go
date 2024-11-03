@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/EmreSahna/url-shortener-app/config"
+	"github.com/EmreSahna/url-shortener-app/configs"
+	"github.com/EmreSahna/url-shortener-app/internal/auth"
 	"github.com/EmreSahna/url-shortener-app/internal/handler"
 	"github.com/EmreSahna/url-shortener-app/internal/postgres"
 	"github.com/EmreSahna/url-shortener-app/internal/redis"
@@ -14,7 +15,13 @@ import (
 
 func main() {
 	// load environment file
-	cfg, err := config.LoadConfig()
+	cfg, err := configs.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// initialize jwt client
+	_, err = auth.NewJWTAuth()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,6 +1,6 @@
 -- Create "users" table
 CREATE TABLE "public"."users" (
- "id" serial NOT NULL,
+ "id" uuid NOT NULL,
  "username" character varying(50) NOT NULL,
  "created_at" timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY ("id"),
@@ -8,10 +8,10 @@ CREATE TABLE "public"."users" (
 );
 -- Create "urls" table
 CREATE TABLE "public"."urls" (
- "id" serial NOT NULL,
+ "id" uuid NOT NULL,
  "original_url" text NOT NULL,
  "shortened_code" character varying(10) NOT NULL,
- "user_id" integer NOT NULL,
+ "user_id" uuid NOT NULL,
  "created_at" timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY ("id"),
  CONSTRAINT "urls_shortened_code_key" UNIQUE ("shortened_code"),

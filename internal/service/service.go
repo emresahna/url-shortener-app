@@ -10,6 +10,7 @@ import (
 type Service interface {
 	CreateUser(context.Context, models.CreateUserRequest) (models.CreateUserResponse, error)
 	ShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
+	GetUser(context.Context, string) (models.GetUserResponse, error)
 }
 
 type service struct {
