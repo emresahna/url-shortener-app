@@ -7,7 +7,8 @@ sql:
       go:
         package: "sqlc"
         out: "./internal/sqlc"
-        sql_package: "pgx/v5"
+        sql_package: "pgx/v4"
+        emit_pointers_for_null_types: true
         overrides:
           - db_type: "uuid"
             go_type:

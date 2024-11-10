@@ -7,9 +7,9 @@ package sqlc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createURL = `-- name: CreateURL :one
@@ -21,16 +21,16 @@ RETURNING id, original_url, shortened_code, user_id, expire_time
 type CreateURLParams struct {
 	OriginalUrl   string
 	ShortenedCode string
-	UserID        uuid.UUID
-	ExpireTime    pgtype.Timestamptz
+	UserID        *uuid.UUID
+	ExpireTime    *time.Time
 }
 
 type CreateURLRow struct {
 	ID            uuid.UUID
 	OriginalUrl   string
 	ShortenedCode string
-	UserID        uuid.UUID
-	ExpireTime    pgtype.Timestamptz
+	UserID        *uuid.UUID
+	ExpireTime    *time.Time
 }
 
 // Create a new shortened URL for a specific user
@@ -96,7 +96,7 @@ WHERE user_id = $1
 `
 
 // Get all URLs created by a specific user
-func (q *Queries) GetURLsByUserID(ctx context.Context, userID uuid.UUID) ([]Url, error) {
+func (q *Queries) GetURLsByUserID(ctx context.Context, userID *uuid.UUID) ([]Url, error) {
 	rows, err := q.db.Query(ctx, getURLsByUserID, userID)
 	if err != nil {
 		return nil, err

@@ -13,6 +13,7 @@ type Endpoints interface {
 	SignupUserHandler(w http.ResponseWriter, r *http.Request)
 	LoginUserHandler(w http.ResponseWriter, r *http.Request)
 	UrlShortenerHandler(w http.ResponseWriter, r *http.Request)
+	LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Request)
 	RedirectUrlHandler(w http.ResponseWriter, r *http.Request)
 }
 
@@ -62,6 +63,23 @@ func (e *endpoints) UrlShortenerHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	resp, err := e.s.ShortenURL(r.Context(), req)
+	if err != nil {
+		e.encodeResponse(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp)
+	return
+}
+
+func (e *endpoints) LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.ShortenURLRequest
+	err := e.decodeRequest(r.Body, &req)
+	if err != nil {
+		return
+	}
+
+	resp, err := e.s.LimitedShortenURL(r.Context(), req)
 	if err != nil {
 		e.encodeResponse(w, err)
 		return

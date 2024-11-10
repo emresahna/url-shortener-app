@@ -9,22 +9,22 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     is_deleted bool default false,
     is_active bool default true,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz default null,
-    deleted_At timestamptz default null
+    created_at timestamp NOT NULL DEFAULT now(),
+    updated_at timestamp default null,
+    deleted_At timestamp default null
 );
 
 CREATE TABLE urls (
     id uuid PRIMARY KEY default uuid_generate_v4(),
     original_url TEXT NOT NULL,
     shortened_code VARCHAR(10) UNIQUE NOT NULL,
-    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    expire_time timestamptz default null,
+    user_id uuid REFERENCES users(id) default null,
+    expire_time timestamp default null,
     is_deleted bool default false,
     is_active bool default true,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz default null,
-    deleted_At timestamptz default null
+    created_at timestamp NOT NULL DEFAULT now(),
+    updated_at timestamp default null,
+    deleted_At timestamp default null
 );
 
 CREATE INDEX idx_shortened_code ON urls(shortened_code);

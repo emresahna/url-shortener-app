@@ -20,6 +20,7 @@ func NewHandler(s service.Service) http.Handler {
 		r.Post("/shorten/url", ep.UrlShortenerHandler)
 	})
 	r.Get("/redirect/{code}", ep.RedirectUrlHandler)
+	r.Post("/shorten/limited-url", ep.LimitedUrlShortenerHandler)
 
 	return r
 }

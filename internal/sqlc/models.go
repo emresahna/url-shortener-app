@@ -5,30 +5,31 @@
 package sqlc
 
 import (
+	"time"
+
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Url struct {
 	ID            uuid.UUID
 	OriginalUrl   string
 	ShortenedCode string
-	UserID        uuid.UUID
-	ExpireTime    pgtype.Timestamptz
-	IsDeleted     pgtype.Bool
-	IsActive      pgtype.Bool
-	CreatedAt     pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-	DeletedAt     pgtype.Timestamptz
+	UserID        *uuid.UUID
+	ExpireTime    *time.Time
+	IsDeleted     *bool
+	IsActive      *bool
+	CreatedAt     time.Time
+	UpdatedAt     *time.Time
+	DeletedAt     *time.Time
 }
 
 type User struct {
 	ID        uuid.UUID
 	Username  string
 	Password  string
-	IsDeleted pgtype.Bool
-	IsActive  pgtype.Bool
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-	DeletedAt pgtype.Timestamptz
+	IsDeleted *bool
+	IsActive  *bool
+	CreatedAt time.Time
+	UpdatedAt *time.Time
+	DeletedAt *time.Time
 }
