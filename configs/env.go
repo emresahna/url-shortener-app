@@ -1,8 +1,10 @@
 package configs
 
 import (
+	"errors"
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
+	"io/fs"
 	"time"
 )
 
@@ -10,6 +12,7 @@ type Config struct {
 	HttpConfig     HttpConfig
 	PostgresConfig PostgresConfig
 	RedisConfig    RedisConfig
+	AuthConfig     AuthConfig
 }
 
 type HttpConfig struct {
@@ -34,9 +37,14 @@ type RedisConfig struct {
 	Address string `env:"REDIS_ADDRESS"`
 }
 
+type AuthConfig struct {
+	PrivateKeyPath string `env:"PRIVATE_KEY_PATH"`
+	PublicKeyPath  string `env:"PUBLIC_KEY_PATH"`
+}
+
 func LoadConfig() (*Config, error) {
-	err := godotenv.Load()
-	if err != nil {
+	err := godotenv.Load("asd")
+	if !errors.Is(err, fs.ErrNotExist) && err != nil {
 		return nil, err
 	}
 
@@ -55,9 +63,15 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
+	var ac AuthConfig
+	if err = env.Parse(&ac); err != nil {
+		return nil, err
+	}
+
 	return &Config{
 		HttpConfig:     hc,
 		PostgresConfig: pc,
 		RedisConfig:    rc,
+		AuthConfig:     ac,
 	}, nil
 }

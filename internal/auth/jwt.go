@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/EmreSahna/url-shortener-app/configs"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/golang-jwt/jwt/v5"
@@ -93,15 +94,15 @@ func (a *auth) Parse(token string) (jwt.MapClaims, error) {
 	return nil, nil
 }
 
-func NewJWTAuth() (Auth, error) {
+func NewJWTAuth(cfg configs.AuthConfig) (Auth, error) {
 	// Read and parse the private key
-	pv, err := parsePrivateKey("./configs/ssl/private.pem")
+	pv, err := parsePrivateKey(cfg.PrivateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
 
 	// Read and parse the public key
-	pb, err := parsePublicKey("./configs/ssl/public.pem")
+	pb, err := parsePublicKey(cfg.PublicKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse public key: %w", err)
 	}

@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// initialize jwt client
-	jwt, err := auth.NewJWTAuth()
+	jwt, err := auth.NewJWTAuth(cfg.AuthConfig)
 	if err != nil {
 		log.Fatal(err)
 	}

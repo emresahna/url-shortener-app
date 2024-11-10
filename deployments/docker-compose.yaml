@@ -1,15 +1,15 @@
 services:
-#  app:
-#    container_name: url-shortener-app
-#    build:
-#      context: ..
-#      dockerfile: Dockerfile
-#    env_file: base.env
-#    depends_on:
-#      - postgres
-#      - redis
-#    networks:
-#      - app_network
+  app:
+    container_name: url-shortener-app
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    env_file: base.env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app_network
 
   postgres:
     container_name: url-shortener-postgres
