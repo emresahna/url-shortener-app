@@ -5,15 +5,92 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/EmreSahna/url-shortener-app/internal/models"
+	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
+	"github.com/golang-jwt/jwt/v5"
 	"os"
+	"time"
+)
+
+const (
+	accessTokenExpireMin  = 10
+	refrestTokenExpireMin = 5
 )
 
 type Auth interface {
+	Create(u sqlc.User) (models.LoginUserResponse, error)
+	Parse(token string) (jwt.MapClaims, error)
 }
 
 type auth struct {
 	pv *ecdsa.PrivateKey
 	pb *ecdsa.PublicKey
+}
+
+func (a *auth) Create(u sqlc.User) (models.LoginUserResponse, error) {
+	p := &models.Payload{
+		Id: u.ID.String(),
+	}
+
+	at, err := a.createAccessToken(p)
+	if err != nil {
+		return models.LoginUserResponse{}, err
+	}
+
+	rt, err := a.createRefreshToken(p)
+	if err != nil {
+		return models.LoginUserResponse{}, err
+	}
+
+	return models.LoginUserResponse{
+		AccessToken:  at,
+		RefreshToken: rt,
+	}, nil
+}
+
+func (a *auth) createAccessToken(p *models.Payload) (string, error) {
+	c := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+		"id":  p.Id,
+		"exp": time.Now().Add(time.Minute * accessTokenExpireMin).Unix(),
+	})
+
+	at, err := c.SignedString(a.pv)
+	if err != nil {
+		return "", err
+	}
+
+	return at, nil
+}
+
+func (a *auth) createRefreshToken(p *models.Payload) (string, error) {
+	c := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+		"id":  p.Id,
+		"exp": time.Now().Add(time.Minute * refrestTokenExpireMin).Unix(),
+	})
+
+	at, err := c.SignedString(a.pv)
+	if err != nil {
+		return "", err
+	}
+
+	return at, nil
+}
+
+func (a *auth) Parse(token string) (jwt.MapClaims, error) {
+	c, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
+			return nil, nil
+		}
+		return a.pb, nil
+	})
+	if err != nil {
+		return nil, nil
+	}
+
+	if claims, ok := c.Claims.(jwt.MapClaims); ok {
+		return claims, nil
+	}
+	return nil, nil
 }
 
 func NewJWTAuth() (Auth, error) {

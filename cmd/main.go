@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// initialize jwt client
-	_, err = auth.NewJWTAuth()
+	jwt, err := auth.NewJWTAuth()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func main() {
 	sc := sqlc.New(db)
 
 	// initialize service
-	serv := service.NewService(sc, rc)
+	serv := service.NewService(sc, rc, jwt)
 
 	// initialize handler
 	h := handler.NewHandler(serv)

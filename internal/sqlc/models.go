@@ -20,5 +20,6 @@ type Url struct {
 type User struct {
 	ID        uuid.UUID
 	Username  string
+	Password  string
 	CreatedAt pgtype.Timestamptz
 }

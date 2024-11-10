@@ -1,14 +1,16 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create "users" table
 CREATE TABLE "public"."users" (
- "id" uuid NOT NULL,
+ "id" uuid NOT NULL DEFAULT public.uuid_generate_v4(),
  "username" character varying(50) NOT NULL,
+ "password" character varying(255) NOT NULL,
  "created_at" timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY ("id"),
  CONSTRAINT "users_username_key" UNIQUE ("username")
 );
 -- Create "urls" table
 CREATE TABLE "public"."urls" (
- "id" uuid NOT NULL,
+ "id" uuid NOT NULL DEFAULT public.uuid_generate_v4(),
  "original_url" text NOT NULL,
  "shortened_code" character varying(10) NOT NULL,
  "user_id" uuid NOT NULL,

@@ -1,20 +1,14 @@
 package models
 
-import (
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
-)
+type SignupUserResponse struct {
+	Info string `json:"inasd"`
+}
+
+type LoginUserResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
 
 type ShortenURLResponse struct {
 	Url string `json:"url"`
-}
-
-type CreateUserResponse struct {
-	Username string `json:"username"`
-}
-
-type GetUserResponse struct {
-	Id        uuid.UUID          `json:"id"`
-	Username  string             `json:"username"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }

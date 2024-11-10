@@ -8,9 +8,14 @@ import (
 )
 
 func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+	t := ctx.Value("token").(string)
+	c, err := s.jwt.Parse(t)
+	if err != nil {
+		return models.ShortenURLResponse{}, err
+	}
+
 	// Parse user_id from token
-	userId := ctx.Value("userID").(string)
-	userUUID, err := uuid.Parse(userId)
+	userUUID, err := uuid.Parse(c["id"].(string))
 	if err != nil {
 		return models.ShortenURLResponse{}, err
 	}
