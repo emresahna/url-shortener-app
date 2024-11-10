@@ -9,36 +9,63 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createURL = `-- name: CreateURL :one
-INSERT INTO urls (original_url, shortened_code, user_id)
-VALUES ($1, $2, $3)
-RETURNING id, original_url, shortened_code, user_id, created_at
+INSERT INTO urls (original_url, shortened_code, user_id, expire_time)
+VALUES ($1, $2, $3, $4)
+RETURNING id, original_url, shortened_code, user_id, expire_time
 `
 
 type CreateURLParams struct {
 	OriginalUrl   string
 	ShortenedCode string
 	UserID        uuid.UUID
+	ExpireTime    pgtype.Timestamptz
+}
+
+type CreateURLRow struct {
+	ID            uuid.UUID
+	OriginalUrl   string
+	ShortenedCode string
+	UserID        uuid.UUID
+	ExpireTime    pgtype.Timestamptz
 }
 
 // Create a new shortened URL for a specific user
-func (q *Queries) CreateURL(ctx context.Context, arg CreateURLParams) (Url, error) {
-	row := q.db.QueryRow(ctx, createURL, arg.OriginalUrl, arg.ShortenedCode, arg.UserID)
-	var i Url
+func (q *Queries) CreateURL(ctx context.Context, arg CreateURLParams) (CreateURLRow, error) {
+	row := q.db.QueryRow(ctx, createURL,
+		arg.OriginalUrl,
+		arg.ShortenedCode,
+		arg.UserID,
+		arg.ExpireTime,
+	)
+	var i CreateURLRow
 	err := row.Scan(
 		&i.ID,
 		&i.OriginalUrl,
 		&i.ShortenedCode,
 		&i.UserID,
-		&i.CreatedAt,
+		&i.ExpireTime,
 	)
 	return i, err
 }
 
+const deleteURLByID = `-- name: DeleteURLByID :exec
+UPDATE urls
+SET deleted_at = NOW(), is_deleted = True, is_active = False
+WHERE id = $1
+`
+
+// Delete URL by url ID
+func (q *Queries) DeleteURLByID(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteURLByID, id)
+	return err
+}
+
 const getURLByCode = `-- name: GetURLByCode :one
-SELECT id, original_url, shortened_code, user_id, created_at
+SELECT id, original_url, shortened_code, user_id, expire_time, is_deleted, is_active, created_at, updated_at, deleted_at
 FROM urls
 WHERE shortened_code = $1
 `
@@ -52,13 +79,18 @@ func (q *Queries) GetURLByCode(ctx context.Context, shortenedCode string) (Url, 
 		&i.OriginalUrl,
 		&i.ShortenedCode,
 		&i.UserID,
+		&i.ExpireTime,
+		&i.IsDeleted,
+		&i.IsActive,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getURLsByUserID = `-- name: GetURLsByUserID :many
-SELECT id, original_url, shortened_code, user_id, created_at
+SELECT id, original_url, shortened_code, user_id, expire_time, is_deleted, is_active, created_at, updated_at, deleted_at
 FROM urls
 WHERE user_id = $1
 `
@@ -78,7 +110,12 @@ func (q *Queries) GetURLsByUserID(ctx context.Context, userID uuid.UUID) ([]Url,
 			&i.OriginalUrl,
 			&i.ShortenedCode,
 			&i.UserID,
+			&i.ExpireTime,
+			&i.IsDeleted,
+			&i.IsActive,
 			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}

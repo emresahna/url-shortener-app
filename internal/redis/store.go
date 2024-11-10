@@ -9,6 +9,7 @@ import (
 type Store interface {
 	Ping(context.Context) error
 	SetUrl(context.Context, string, string) error
+	GetUrl(context.Context, string) (string, error)
 }
 
 type store struct {
@@ -41,4 +42,12 @@ func (c *store) SetUrl(ctx context.Context, shortenUrl string, originalUrl strin
 		return err
 	}
 	return nil
+}
+
+func (c *store) GetUrl(ctx context.Context, code string) (string, error) {
+	result, err := c.rcc.Get(ctx, code).Result()
+	if err != nil {
+		return "", err
+	}
+	return result, nil
 }

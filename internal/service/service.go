@@ -12,6 +12,7 @@ type Service interface {
 	SignupUser(context.Context, models.SignupUserRequest) (models.SignupUserResponse, error)
 	LoginUser(context.Context, models.LoginUserRequest) (models.LoginUserResponse, error)
 	ShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
+	RedirectUrl(context.Context, string) (string, error)
 }
 
 type service struct {

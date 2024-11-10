@@ -17,8 +17,9 @@ func NewHandler(s service.Service) http.Handler {
 	r.Post("/login", ep.LoginUserHandler)
 	r.Group(func(r chi.Router) {
 		r.Use(bearer.BearerMiddleware)
-		r.Post("/url-shortener", ep.UrlShortenerHandler)
+		r.Post("/shorten/url", ep.UrlShortenerHandler)
 	})
+	r.Get("/redirect/{code}", ep.RedirectUrlHandler)
 
 	return r
 }

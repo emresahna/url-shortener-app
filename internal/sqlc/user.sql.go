@@ -14,7 +14,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password)
 VALUES ($1, $2)
-RETURNING id, username, password, created_at
+RETURNING id, username, password, is_deleted, is_active, created_at, updated_at, deleted_at
 `
 
 type CreateUserParams struct {
@@ -30,13 +30,17 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.Username,
 		&i.Password,
+		&i.IsDeleted,
+		&i.IsActive,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getUserByUserID = `-- name: GetUserByUserID :one
-SELECT id, username, password, created_at FROM users
+SELECT id, username, password, is_deleted, is_active, created_at, updated_at, deleted_at FROM users
 WHERE id = $1
 `
 
@@ -48,13 +52,17 @@ func (q *Queries) GetUserByUserID(ctx context.Context, id uuid.UUID) (User, erro
 		&i.ID,
 		&i.Username,
 		&i.Password,
+		&i.IsDeleted,
+		&i.IsActive,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, password, created_at FROM users
+SELECT id, username, password, is_deleted, is_active, created_at, updated_at, deleted_at FROM users
 WHERE username = $1
 `
 
@@ -66,7 +74,11 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.ID,
 		&i.Username,
 		&i.Password,
+		&i.IsDeleted,
+		&i.IsActive,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }

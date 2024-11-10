@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/service"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 )
@@ -12,6 +13,7 @@ type Endpoints interface {
 	SignupUserHandler(w http.ResponseWriter, r *http.Request)
 	LoginUserHandler(w http.ResponseWriter, r *http.Request)
 	UrlShortenerHandler(w http.ResponseWriter, r *http.Request)
+	RedirectUrlHandler(w http.ResponseWriter, r *http.Request)
 }
 
 type endpoints struct {
@@ -66,6 +68,20 @@ func (e *endpoints) UrlShortenerHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	e.encodeResponse(w, resp)
+	return
+}
+
+func (e *endpoints) RedirectUrlHandler(w http.ResponseWriter, r *http.Request) {
+	code := chi.URLParam(r, "code")
+
+	resp, err := e.s.RedirectUrl(r.Context(), code)
+	if err != nil {
+		e.encodeResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Location", resp)
+	w.WriteHeader(301)
 	return
 }
 

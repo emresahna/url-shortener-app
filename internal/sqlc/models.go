@@ -14,12 +14,21 @@ type Url struct {
 	OriginalUrl   string
 	ShortenedCode string
 	UserID        uuid.UUID
+	ExpireTime    pgtype.Timestamptz
+	IsDeleted     pgtype.Bool
+	IsActive      pgtype.Bool
 	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	DeletedAt     pgtype.Timestamptz
 }
 
 type User struct {
 	ID        uuid.UUID
 	Username  string
 	Password  string
+	IsDeleted pgtype.Bool
+	IsActive  pgtype.Bool
 	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+	DeletedAt pgtype.Timestamptz
 }

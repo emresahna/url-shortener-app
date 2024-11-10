@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"github.com/EmreSahna/url-shortener-app/internal/hash"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
@@ -21,13 +23,17 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 	}
 
 	// Shorten url
-	shortenUrl := "abcdef"
+	shortenUrl := hash.GenerateUniqueCode()
 
 	// Save to db
 	savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
 		OriginalUrl:   req.OriginalUrl,
 		ShortenedCode: shortenUrl,
 		UserID:        userUUID,
+		ExpireTime: pgtype.Timestamptz{
+			Time:  req.ExpireTime,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		return models.ShortenURLResponse{}, err
