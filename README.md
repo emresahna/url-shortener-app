@@ -6,7 +6,7 @@ sqlc generate
 ## Atlas create migration
 ```shell
 sudo atlas migrate diff initial \
---dir "file://internal/sqlc/migrations" \
+--dir "file://deployments/migrations" \
 --to "file://internal/sqlc/schema.sql" \
 --dev-url "docker://postgres/16/url-shortener-db" \
 --format '{{ sql . " " }}'
@@ -16,7 +16,7 @@ sudo atlas migrate diff initial \
 ```shell
 sudo atlas migrate apply \
 --url "postgres://url-shortener-db-user:url-shortener-db-pass@localhost:5432/url-shortener-db?sslmode=disable" \
---dir "file://internal/sqlc/migrations"
+--dir "file://deployments/migrations"
 ```
 
 ## Generate ECDSA key pair

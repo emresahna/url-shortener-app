@@ -36,6 +36,18 @@ services:
     volumes:
       - redis_data:/data
 
+  migrate:
+    image: arigaio/atlas:latest
+    command: >
+      migrate apply
+      --url postgres://url-shortener-db-user:url-shortener-db-pass@postgres:5432/url-shortener-db?sslmode=disable
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+    volumes:
+      - ./migrations/:/migrations
+
 networks:
   app_network:
     driver: bridge
