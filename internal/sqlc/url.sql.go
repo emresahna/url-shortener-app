@@ -65,28 +65,17 @@ func (q *Queries) DeleteURLByID(ctx context.Context, id uuid.UUID) error {
 }
 
 const getURLByCode = `-- name: GetURLByCode :one
-SELECT id, original_url, shortened_code, user_id, expire_time, is_deleted, is_active, created_at, updated_at, deleted_at
+SELECT original_url
 FROM urls
 WHERE shortened_code = $1
 `
 
 // Get the original URL by shortened code
-func (q *Queries) GetURLByCode(ctx context.Context, shortenedCode string) (Url, error) {
+func (q *Queries) GetURLByCode(ctx context.Context, shortenedCode string) (string, error) {
 	row := q.db.QueryRow(ctx, getURLByCode, shortenedCode)
-	var i Url
-	err := row.Scan(
-		&i.ID,
-		&i.OriginalUrl,
-		&i.ShortenedCode,
-		&i.UserID,
-		&i.ExpireTime,
-		&i.IsDeleted,
-		&i.IsActive,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
-	)
-	return i, err
+	var original_url string
+	err := row.Scan(&original_url)
+	return original_url, err
 }
 
 const getURLsByUserID = `-- name: GetURLsByUserID :many

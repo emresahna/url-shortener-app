@@ -43,7 +43,7 @@ type AuthConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
-	err := godotenv.Load("asd")
+	err := godotenv.Load()
 	if !errors.Is(err, fs.ErrNotExist) && err != nil {
 		return nil, err
 	}

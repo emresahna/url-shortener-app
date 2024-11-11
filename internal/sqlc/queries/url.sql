@@ -6,18 +6,6 @@ RETURNING id, original_url, shortened_code, user_id, expire_time;
 
 -- Get the original URL by shortened code
 -- name: GetURLByCode :one
-SELECT *
+SELECT original_url
 FROM urls
 WHERE shortened_code = $1;
-
--- Get all URLs created by a specific user
--- name: GetURLsByUserID :many
-SELECT *
-FROM urls
-WHERE user_id = $1;
-
--- Delete URL by url ID
--- name: DeleteURLByID :exec
-UPDATE urls
-SET deleted_at = NOW(), is_deleted = True, is_active = False
-WHERE id = $1;

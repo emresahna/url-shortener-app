@@ -12,11 +12,3 @@ type LoginUserResponse struct {
 type ShortenURLResponse struct {
 	Url string `json:"url"`
 }
-
-type UrlNotFound struct {
-	Message string `json:"message"`
-}
-
-func (u UrlNotFound) Error() string {
-	return u.Message
-}

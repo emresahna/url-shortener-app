@@ -12,15 +12,17 @@ type Store interface {
 	SetUrl(context.Context, string, string) error
 	SetUrlWithExpire(context.Context, string, string, time.Duration) error
 	GetUrl(context.Context, string) (string, error)
+	IncreaseClick(context.Context, string) error
 }
 
 type store struct {
 	rcc *redis.Client
 }
 
-func NewRedisClient(cfg configs.RedisConfig) (Store, error) {
+func NewRedisClient(cfg configs.RedisConfig, db int) (Store, error) {
 	rcc := redis.NewClient(&redis.Options{
 		Addr: cfg.Address,
+		DB:   db,
 	})
 
 	s := &store{
@@ -60,4 +62,12 @@ func (c *store) GetUrl(ctx context.Context, code string) (string, error) {
 		return "", err
 	}
 	return result, nil
+}
+
+func (c *store) IncreaseClick(ctx context.Context, code string) error {
+	err := c.rcc.Incr(ctx, "clicks:"+code).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }
