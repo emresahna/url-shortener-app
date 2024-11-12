@@ -1,9 +1,21 @@
 services:
-  app:
+  shortener-app:
     container_name: url-shortener-app
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: cmd/http_server/Dockerfile
+    env_file: base.env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app_network
+
+  shortener-scheduler:
+    container_name: url-shortener-scheduler
+    build:
+      context: ..
+      dockerfile: cmd/async_server/Dockerfile
     env_file: base.env
     depends_on:
       - postgres
