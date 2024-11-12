@@ -34,7 +34,10 @@ type PostgresConfig struct {
 }
 
 type RedisConfig struct {
-	Address string `env:"REDIS_ADDRESS"`
+	Address     string `env:"REDIS_ADDRESS"`
+	CacheDB     int    `env:"REDIS_CACHE_DB"`
+	AnalyticDB  int    `env:"REDIS_ANALYTIC_DB"`
+	SchedulerDB int    `env:"REDIS_SCHEDULER_DB"`
 }
 
 type AuthConfig struct {

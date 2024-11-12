@@ -18,16 +18,16 @@ type Service interface {
 
 type service struct {
 	db  *sqlc.Queries
-	rc  redis.Store
+	rcc redis.Store
 	jwt auth.Auth
-	arc redis.Store
+	rca redis.Store
 }
 
-func NewService(db *sqlc.Queries, rc redis.Store, jwt auth.Auth, arc redis.Store) Service {
+func NewService(db *sqlc.Queries, rcc redis.Store, jwt auth.Auth, rca redis.Store) Service {
 	return &service{
 		db:  db,
-		rc:  rc,
+		rcc: rcc,
 		jwt: jwt,
-		arc: arc,
+		rca: rca,
 	}
 }

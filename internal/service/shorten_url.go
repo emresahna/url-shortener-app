@@ -35,8 +35,14 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		return models.ShortenURLResponse{}, err
 	}
 
+	// Create click count record
+	err = s.db.InsertClickCount(context.Background(), savedUrl.ID)
+	if err != nil {
+		return models.ShortenURLResponse{}, err
+	}
+
 	// Save to cache
-	err = s.rc.SetUrl(ctx, shortenUrl, req.OriginalUrl)
+	err = s.rcc.SetUrl(ctx, shortenUrl, req.OriginalUrl)
 	if err != nil {
 		return models.ShortenURLResponse{}, err
 	}

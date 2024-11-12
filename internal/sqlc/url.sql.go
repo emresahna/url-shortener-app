@@ -52,16 +52,18 @@ func (q *Queries) CreateURL(ctx context.Context, arg CreateURLParams) (CreateURL
 	return i, err
 }
 
-const deleteURLByID = `-- name: DeleteURLByID :exec
-UPDATE urls
-SET deleted_at = NOW(), is_deleted = True, is_active = False
-WHERE id = $1
+const getIDByShortCode = `-- name: GetIDByShortCode :one
+SELECT id
+FROM urls
+where shortened_code = $1
 `
 
-// Delete URL by url ID
-func (q *Queries) DeleteURLByID(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteURLByID, id)
-	return err
+// Get url ID by short code
+func (q *Queries) GetIDByShortCode(ctx context.Context, shortenedCode string) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, getIDByShortCode, shortenedCode)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getURLByCode = `-- name: GetURLByCode :one
@@ -76,42 +78,4 @@ func (q *Queries) GetURLByCode(ctx context.Context, shortenedCode string) (strin
 	var original_url string
 	err := row.Scan(&original_url)
 	return original_url, err
-}
-
-const getURLsByUserID = `-- name: GetURLsByUserID :many
-SELECT id, original_url, shortened_code, user_id, expire_time, is_deleted, is_active, created_at, updated_at, deleted_at
-FROM urls
-WHERE user_id = $1
-`
-
-// Get all URLs created by a specific user
-func (q *Queries) GetURLsByUserID(ctx context.Context, userID *uuid.UUID) ([]Url, error) {
-	rows, err := q.db.Query(ctx, getURLsByUserID, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Url
-	for rows.Next() {
-		var i Url
-		if err := rows.Scan(
-			&i.ID,
-			&i.OriginalUrl,
-			&i.ShortenedCode,
-			&i.UserID,
-			&i.ExpireTime,
-			&i.IsDeleted,
-			&i.IsActive,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.DeletedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }

@@ -26,7 +26,7 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	}
 
 	// Save to cache
-	err = s.rc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
+	err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 	if err != nil {
 		return models.ShortenURLResponse{}, err
 	}

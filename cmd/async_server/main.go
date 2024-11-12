@@ -27,10 +27,10 @@ func main() {
 	// initialize sqlc client
 	sc := sqlc.New(db)
 
-	// initialize redis client
+	// initialize redis client analytics
 	rc := redis.NewClient(&redis.Options{
 		Addr: cfg.RedisConfig.Address,
-		DB:   1,
+		DB:   cfg.RedisConfig.AnalyticDB,
 	})
 
 	ts := task.NewTask(sc, rc)
@@ -38,7 +38,7 @@ func main() {
 	// initialize async server
 	srv := asynq.NewServer(asynq.RedisClientOpt{
 		Addr: cfg.RedisConfig.Address,
-		DB:   2,
+		DB:   cfg.RedisConfig.SchedulerDB,
 	}, asynq.Config{
 		Concurrency: 10,
 	})
@@ -54,10 +54,10 @@ func main() {
 
 	scheduler := asynq.NewScheduler(asynq.RedisClientOpt{
 		Addr: cfg.RedisConfig.Address,
-		DB:   2,
+		DB:   cfg.RedisConfig.SchedulerDB,
 	}, nil)
 
-	_, err = scheduler.Register("@every 5s", asynq.NewTask("click:increase", nil))
+	_, err = scheduler.Register("@every 10s", asynq.NewTask("click:increase", nil))
 
 	go func() {
 		if err = scheduler.Run(); err != nil {

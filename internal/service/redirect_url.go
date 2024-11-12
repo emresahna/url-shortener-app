@@ -12,7 +12,7 @@ func (s *service) RedirectUrl(ctx context.Context, code string) (res string, err
 	var original string
 
 	// Check cache
-	original, err = s.rc.GetUrl(ctx, code)
+	original, err = s.rcc.GetUrl(ctx, code)
 	if !errors.Is(err, redis.Nil) && err != nil {
 		return "", err
 	}
@@ -30,7 +30,7 @@ func (s *service) RedirectUrl(ctx context.Context, code string) (res string, err
 		return "", models.UrlNotFoundErr()
 	}
 
-	err = s.arc.IncreaseClick(ctx, code)
+	err = s.rca.IncreaseClick(ctx, code)
 	if err != nil {
 		return "", err
 	}

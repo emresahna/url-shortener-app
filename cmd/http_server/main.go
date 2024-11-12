@@ -26,14 +26,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// initialize redis client
-	rc, err := redis.NewRedisClient(cfg.RedisConfig, 0)
+	// initialize redis client for cache
+	rcc, err := redis.NewRedisClient(cfg.RedisConfig, cfg.RedisConfig.CacheDB)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// initialize another redis
-	arc, err := redis.NewRedisClient(cfg.RedisConfig, 1)
+	// initialize redis client for analytics
+	rca, err := redis.NewRedisClient(cfg.RedisConfig, cfg.RedisConfig.AnalyticDB)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func main() {
 	sc := sqlc.New(db)
 
 	// initialize service
-	serv := service.NewService(sc, rc, jwt, arc)
+	serv := service.NewService(sc, rcc, jwt, rca)
 
 	// initialize handler
 	h := handler.NewHandler(serv)

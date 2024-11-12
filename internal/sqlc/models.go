@@ -10,6 +10,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type ClickCount struct {
+	UrlID       uuid.UUID
+	TotalClicks int64
+}
+
 type Url struct {
 	ID            uuid.UUID
 	OriginalUrl   string

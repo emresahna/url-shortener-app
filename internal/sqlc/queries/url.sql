@@ -9,3 +9,9 @@ RETURNING id, original_url, shortened_code, user_id, expire_time;
 SELECT original_url
 FROM urls
 WHERE shortened_code = $1;
+
+-- Get url ID by short code
+-- name: GetIDByShortCode :one
+SELECT id
+FROM urls
+where shortened_code = $1;

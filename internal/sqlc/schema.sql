@@ -27,5 +27,10 @@ CREATE TABLE urls (
     deleted_At timestamp default null
 );
 
+CREATE TABLE click_counts (
+    url_id uuid PRIMARY KEY REFERENCES urls(id) ON DELETE CASCADE,
+    total_clicks bigint NOT NULL DEFAULT 0
+);
+
 CREATE INDEX idx_shortened_code ON urls(shortened_code);
 CREATE INDEX idx_user_id ON urls(user_id);
