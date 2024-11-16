@@ -14,4 +14,6 @@ FROM alpine:edge
 
 COPY --from=builder /app/url-scheduler .
 
+EXPOSE 3000
+
 CMD ["./url-scheduler"]
