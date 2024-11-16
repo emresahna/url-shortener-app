@@ -1,7 +1,7 @@
 package models
 
 type SignupUserResponse struct {
-	Info string `json:"inasd"`
+	Info string `json:"info"`
 }
 
 type LoginUserResponse struct {
