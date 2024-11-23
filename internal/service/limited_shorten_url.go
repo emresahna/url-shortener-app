@@ -18,46 +18,46 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	// Shorten url
 	shortenUrl := hash.GenerateUniqueCode()
 
-	// Save to db
-	savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
-		OriginalUrl:   req.OriginalUrl,
-		ShortenedCode: shortenUrl,
-	})
-	if err != nil {
-		return models.ShortenURLResponse{}, err
-	}
-
-	// Create click count record async
-	clickCh := make(chan error, 1)
-	go func() {
-		err = s.db.InsertClickCount(context.Background(), savedUrl.ID)
-		if err != nil {
-			clickCh <- models.CreateClickCountErr()
-		}
-		clickCh <- err
-	}()
-
-	// Save to cache
-	cacheCh := make(chan error, 1)
+	// Save to redis
+	redisCh := make(chan error, 1)
 	go func() {
 		duration := time.Minute * 10
 		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 		if err != nil {
-			cacheCh <- models.SaveToCacheErr()
+			redisCh <- models.SaveToCacheErr()
 		}
-		cacheCh <- err
+		redisCh <- err
 	}()
 
-	if err = <-clickCh; err != nil {
+	// Create url and click count record async
+	dbCh := make(chan error, 1)
+	go func() {
+		// Save to db
+		savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
+			OriginalUrl:   req.OriginalUrl,
+			ShortenedCode: shortenUrl,
+		})
+		if err != nil {
+			dbCh <- models.CreateURLErr()
+		}
+
+		err = s.db.InsertClickCount(context.Background(), savedUrl.ID)
+		if err != nil {
+			dbCh <- models.CreateClickCountErr()
+		}
+		dbCh <- nil
+	}()
+
+	if err = <-dbCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
 
-	if err = <-cacheCh; err != nil {
+	if err = <-redisCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
 
 	// Return
 	return models.ShortenURLResponse{
-		Url: savedUrl.ShortenedCode,
+		Url: shortenUrl,
 	}, nil
 }

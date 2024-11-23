@@ -56,7 +56,7 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		redisCh <- err
 	}()
 
-	// Create click count record async
+	// Create url and click count record async
 	dbCh := make(chan error, 1)
 	go func() {
 		// Save to db
