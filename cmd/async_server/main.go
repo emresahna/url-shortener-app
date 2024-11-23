@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/EmreSahna/url-shortener-app/configs"
 	"github.com/EmreSahna/url-shortener-app/internal/postgres"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
@@ -26,6 +28,23 @@ func main() {
 
 	// initialize sqlc client
 	sc := sqlc.New(db)
+
+	// initialize redis client cache
+	ra := redis.NewClient(&redis.Options{
+		Addr: cfg.RedisConfig.Address,
+		DB:   cfg.RedisConfig.AnalyticDB,
+	})
+
+	pubSub := ra.PSubscribe(context.TODO(), "__keyevent@0__:expired")
+	ch := pubSub.Channel()
+
+	defer pubSub.Close()
+
+	go func() {
+		for msg := range ch {
+			fmt.Println(msg.Channel, msg.Payload)
+		}
+	}()
 
 	// initialize redis client analytics
 	rc := redis.NewClient(&redis.Options{

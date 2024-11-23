@@ -12,20 +12,17 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	// Shorten url
 	shortenUrl := hash.GenerateUniqueCode()
 
-	duration := time.Minute * 10
-	expireTime := time.Now().Add(duration)
-
 	// Save to db
 	savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
 		OriginalUrl:   req.OriginalUrl,
 		ShortenedCode: shortenUrl,
-		ExpireTime:    &expireTime,
 	})
 	if err != nil {
 		return models.ShortenURLResponse{}, err
 	}
 
 	// Save to cache
+	duration := time.Minute * 10
 	err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 	if err != nil {
 		return models.ShortenURLResponse{}, err

@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/EmreSahna/url-shortener-app/internal/hash"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/google/uuid"
+	"time"
 )
 
 func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
@@ -29,7 +31,6 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		OriginalUrl:   req.OriginalUrl,
 		ShortenedCode: shortenUrl,
 		UserID:        &userUUID,
-		ExpireTime:    req.ExpireTime,
 	})
 	if err != nil {
 		return models.ShortenURLResponse{}, err
@@ -42,7 +43,18 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 	}
 
 	// Save to cache
-	err = s.rcc.SetUrl(ctx, shortenUrl, req.OriginalUrl)
+	duration := time.Second * 0
+	if req.ExpireTime != nil {
+		expirationTime, err := time.Parse(time.RFC3339, *req.ExpireTime)
+		if err != nil {
+			fmt.Println("Error parsing expiration date:", err)
+			return models.ShortenURLResponse{}, err
+		}
+
+		duration = expirationTime.Sub(time.Now())
+	}
+
+	err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 	if err != nil {
 		return models.ShortenURLResponse{}, err
 	}

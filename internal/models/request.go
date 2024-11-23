@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 type SignupUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -13,6 +11,6 @@ type LoginUserRequest struct {
 }
 
 type ShortenURLRequest struct {
-	OriginalUrl string     `json:"original_url"`
-	ExpireTime  *time.Time `json:"expire_time"`
+	OriginalUrl string  `json:"original_url"`
+	ExpireTime  *string `json:"expire_time"`
 }
