@@ -11,28 +11,28 @@ import (
 func (s *service) RedirectUrl(ctx context.Context, code string) (res string, err error) {
 	var original string
 
-	// Check cache
+	// Check redis
 	original, err = s.rcc.GetUrl(ctx, code)
 	if !errors.Is(err, redis.Nil) && err != nil {
-		return "", err
+		return "", models.InternalServerErr()
 	}
 
-	// Cache not hit, check database
+	// Redis not hit, check database
 	if original == "" {
 		original, err = s.db.GetURLByCode(ctx, code)
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return "", err
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return "", models.UrlNotFoundErr()
+			} else {
+				return "", models.InternalServerErr()
+			}
 		}
 	}
 
-	// If url does not appear in db and cache then return not found
-	if original == "" {
-		return "", models.UrlNotFoundErr()
-	}
-
+	// Increase click
 	err = s.rca.IncreaseClick(ctx, code)
 	if err != nil {
-		return "", err
+		return "", models.InternalServerErr()
 	}
 
 	// Return URL

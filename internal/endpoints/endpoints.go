@@ -100,7 +100,7 @@ func (e *endpoints) RedirectUrlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Location", resp)
-	w.WriteHeader(301)
+	w.WriteHeader(http.StatusMovedPermanently)
 	return
 }
 
