@@ -8,7 +8,7 @@ RETURNING id, original_url, shortened_code, user_id;
 -- name: GetURLByCode :one
 SELECT original_url
 FROM urls
-WHERE shortened_code = $1;
+WHERE shortened_code = $1 and is_active = True and is_deleted = False;
 
 -- Get url ID by short code
 -- name: GetIDByShortCode :one

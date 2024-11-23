@@ -78,7 +78,7 @@ func (q *Queries) GetIDByShortCode(ctx context.Context, shortenedCode string) (u
 const getURLByCode = `-- name: GetURLByCode :one
 SELECT original_url
 FROM urls
-WHERE shortened_code = $1
+WHERE shortened_code = $1 and is_active = True and is_deleted = False
 `
 
 // Get the original URL by shortened code

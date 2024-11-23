@@ -32,38 +32,18 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 	// Shorten url
 	shortenUrl := hash.GenerateUniqueCode()
 
-	// Save to db
-	savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
-		OriginalUrl:   req.OriginalUrl,
-		ShortenedCode: shortenUrl,
-		UserID:        &userUUID,
-	})
-	if err != nil {
-		return models.ShortenURLResponse{}, models.CreateURLErr()
-	}
-
-	// Create click count record async
-	clickCh := make(chan error, 1)
-	go func() {
-		err = s.db.InsertClickCount(context.Background(), savedUrl.ID)
-		if err != nil {
-			clickCh <- models.CreateClickCountErr()
-		}
-		clickCh <- err
-	}()
-
-	// Save to cache
-	cacheCh := make(chan error, 1)
+	// Save to redis
+	redisCh := make(chan error, 1)
 	go func() {
 		duration := time.Second * 0
 		if req.ExpireTime != nil {
 			expirationTime, err := time.Parse(time.RFC3339, *req.ExpireTime)
 			if err != nil {
-				cacheCh <- models.ParseExpireTimeErr()
+				redisCh <- models.ParseExpireTimeErr()
 			}
 
 			if time.Now().After(expirationTime) {
-				cacheCh <- models.ExpireTimeAlreadyPassedErr()
+				redisCh <- models.ExpireTimeAlreadyPassedErr()
 			}
 
 			duration = expirationTime.Sub(time.Now())
@@ -71,21 +51,41 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 
 		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 		if err != nil {
-			cacheCh <- models.SaveToCacheErr()
+			redisCh <- models.SaveToCacheErr()
 		}
-		cacheCh <- err
+		redisCh <- err
 	}()
 
-	if err = <-clickCh; err != nil {
+	// Create click count record async
+	dbCh := make(chan error, 1)
+	go func() {
+		// Save to db
+		savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
+			OriginalUrl:   req.OriginalUrl,
+			ShortenedCode: shortenUrl,
+			UserID:        &userUUID,
+		})
+		if err != nil {
+			dbCh <- models.CreateURLErr()
+		}
+
+		err = s.db.InsertClickCount(context.Background(), savedUrl.ID)
+		if err != nil {
+			dbCh <- models.CreateClickCountErr()
+		}
+		dbCh <- nil
+	}()
+
+	if err = <-dbCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
 
-	if err = <-cacheCh; err != nil {
+	if err = <-redisCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
 
 	// Return
 	return models.ShortenURLResponse{
-		Url: savedUrl.ShortenedCode,
+		Url: shortenUrl,
 	}, nil
 }
