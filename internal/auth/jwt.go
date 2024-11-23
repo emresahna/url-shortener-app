@@ -85,7 +85,7 @@ func (a *auth) Parse(token string) (jwt.MapClaims, error) {
 		return a.pb, nil
 	})
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	if claims, ok := c.Claims.(jwt.MapClaims); ok {

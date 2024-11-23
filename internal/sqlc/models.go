@@ -20,7 +20,6 @@ type Url struct {
 	OriginalUrl   string
 	ShortenedCode string
 	UserID        *uuid.UUID
-	ExpireTime    *time.Time
 	IsDeleted     *bool
 	IsActive      *bool
 	CreatedAt     time.Time

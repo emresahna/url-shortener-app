@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/EmreSahna/url-shortener-app/configs"
 	"github.com/EmreSahna/url-shortener-app/internal/postgres"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
@@ -10,6 +9,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 	"log"
+	"time"
 )
 
 func main() {
@@ -42,7 +42,11 @@ func main() {
 
 	go func() {
 		for msg := range ch {
-			fmt.Println(msg.Channel, msg.Payload)
+			now := time.Now()
+			sc.DeleteExpiredUrlByShortCode(context.TODO(), sqlc.DeleteExpiredUrlByShortCodeParams{
+				DeletedAt:     &now,
+				ShortenedCode: msg.Payload,
+			})
 		}
 	}()
 

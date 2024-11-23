@@ -2,25 +2,31 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"github.com/EmreSahna/url-shortener-app/internal/hash"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
+	"github.com/EmreSahna/url-shortener-app/internal/validator"
 	"github.com/google/uuid"
 	"time"
 )
 
 func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+	// Parse token from string
 	t := ctx.Value("token").(string)
 	c, err := s.jwt.Parse(t)
 	if err != nil {
-		return models.ShortenURLResponse{}, err
+		return models.ShortenURLResponse{}, models.TokenFailureErr()
 	}
 
 	// Parse user_id from token
 	userUUID, err := uuid.Parse(c["id"].(string))
 	if err != nil {
-		return models.ShortenURLResponse{}, err
+		return models.ShortenURLResponse{}, models.CustomerIdParseErr()
+	}
+
+	// Validate url
+	if !validator.ValidateURL(req.OriginalUrl) {
+		return models.ShortenURLResponse{}, models.UrlNotValidErr()
 	}
 
 	// Shorten url
@@ -33,29 +39,48 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		UserID:        &userUUID,
 	})
 	if err != nil {
-		return models.ShortenURLResponse{}, err
+		return models.ShortenURLResponse{}, models.CreateURLErr()
 	}
 
-	// Create click count record
-	err = s.db.InsertClickCount(context.Background(), savedUrl.ID)
-	if err != nil {
-		return models.ShortenURLResponse{}, err
-	}
+	// Create click count record async
+	clickCh := make(chan error, 1)
+	go func() {
+		err = s.db.InsertClickCount(context.Background(), savedUrl.ID)
+		if err != nil {
+			clickCh <- models.CreateClickCountErr()
+		}
+		clickCh <- err
+	}()
 
 	// Save to cache
-	duration := time.Second * 0
-	if req.ExpireTime != nil {
-		expirationTime, err := time.Parse(time.RFC3339, *req.ExpireTime)
-		if err != nil {
-			fmt.Println("Error parsing expiration date:", err)
-			return models.ShortenURLResponse{}, err
+	cacheCh := make(chan error, 1)
+	go func() {
+		duration := time.Second * 0
+		if req.ExpireTime != nil {
+			expirationTime, err := time.Parse(time.RFC3339, *req.ExpireTime)
+			if err != nil {
+				cacheCh <- models.ParseExpireTimeErr()
+			}
+
+			if time.Now().After(expirationTime) {
+				cacheCh <- models.ExpireTimeAlreadyPassedErr()
+			}
+
+			duration = expirationTime.Sub(time.Now())
 		}
 
-		duration = expirationTime.Sub(time.Now())
+		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
+		if err != nil {
+			cacheCh <- models.SaveToCacheErr()
+		}
+		cacheCh <- err
+	}()
+
+	if err = <-clickCh; err != nil {
+		return models.ShortenURLResponse{}, err
 	}
 
-	err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
-	if err != nil {
+	if err = <-cacheCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
 

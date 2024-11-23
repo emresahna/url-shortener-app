@@ -19,7 +19,6 @@ CREATE TABLE urls (
     original_url TEXT NOT NULL,
     shortened_code VARCHAR(10) UNIQUE NOT NULL,
     user_id uuid REFERENCES users(id) default null,
-    expire_time timestamp default null,
     is_deleted bool default false,
     is_active bool default true,
     created_at timestamp NOT NULL DEFAULT now(),

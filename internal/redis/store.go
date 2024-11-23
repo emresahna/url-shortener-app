@@ -40,7 +40,7 @@ func (c *store) Ping(ctx context.Context) error {
 }
 
 func (c *store) SetUrlWithExpire(ctx context.Context, shortenUrl string, originalUrl string, expireTime time.Duration) error {
-	err := c.rcc.SetEx(ctx, shortenUrl, originalUrl, expireTime).Err()
+	err := c.rcc.Set(ctx, shortenUrl, originalUrl, expireTime).Err()
 	if err != nil {
 		return err
 	}

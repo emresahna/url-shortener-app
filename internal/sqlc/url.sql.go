@@ -13,16 +13,15 @@ import (
 )
 
 const createURL = `-- name: CreateURL :one
-INSERT INTO urls (original_url, shortened_code, user_id, expire_time)
-VALUES ($1, $2, $3, $4)
-RETURNING id, original_url, shortened_code, user_id, expire_time
+INSERT INTO urls (original_url, shortened_code, user_id)
+VALUES ($1, $2, $3)
+RETURNING id, original_url, shortened_code, user_id
 `
 
 type CreateURLParams struct {
 	OriginalUrl   string
 	ShortenedCode string
 	UserID        *uuid.UUID
-	ExpireTime    *time.Time
 }
 
 type CreateURLRow struct {
@@ -30,26 +29,36 @@ type CreateURLRow struct {
 	OriginalUrl   string
 	ShortenedCode string
 	UserID        *uuid.UUID
-	ExpireTime    *time.Time
 }
 
 // Create a new shortened URL for a specific user
 func (q *Queries) CreateURL(ctx context.Context, arg CreateURLParams) (CreateURLRow, error) {
-	row := q.db.QueryRow(ctx, createURL,
-		arg.OriginalUrl,
-		arg.ShortenedCode,
-		arg.UserID,
-		arg.ExpireTime,
-	)
+	row := q.db.QueryRow(ctx, createURL, arg.OriginalUrl, arg.ShortenedCode, arg.UserID)
 	var i CreateURLRow
 	err := row.Scan(
 		&i.ID,
 		&i.OriginalUrl,
 		&i.ShortenedCode,
 		&i.UserID,
-		&i.ExpireTime,
 	)
 	return i, err
+}
+
+const deleteExpiredUrlByShortCode = `-- name: DeleteExpiredUrlByShortCode :exec
+UPDATE urls
+SET is_deleted = true, is_active = false, deleted_at = $1
+WHERE shortened_code = $2
+`
+
+type DeleteExpiredUrlByShortCodeParams struct {
+	DeletedAt     *time.Time
+	ShortenedCode string
+}
+
+// Delete expired url by short code
+func (q *Queries) DeleteExpiredUrlByShortCode(ctx context.Context, arg DeleteExpiredUrlByShortCodeParams) error {
+	_, err := q.db.Exec(ctx, deleteExpiredUrlByShortCode, arg.DeletedAt, arg.ShortenedCode)
+	return err
 }
 
 const getIDByShortCode = `-- name: GetIDByShortCode :one

@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -30,11 +31,11 @@ func (e *endpoints) SignupUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := e.s.SignupUser(r.Context(), req)
 	if err != nil {
-		e.encodeResponse(w, err)
+		e.encodeError(w, err)
 		return
 	}
 
-	e.encodeResponse(w, resp)
+	e.encodeResponse(w, resp, 201)
 	return
 }
 
@@ -47,11 +48,11 @@ func (e *endpoints) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := e.s.LoginUser(r.Context(), req)
 	if err != nil {
-		e.encodeResponse(w, err)
+		e.encodeError(w, err)
 		return
 	}
 
-	e.encodeResponse(w, resp)
+	e.encodeResponse(w, resp, 200)
 	return
 }
 
@@ -64,11 +65,11 @@ func (e *endpoints) UrlShortenerHandler(w http.ResponseWriter, r *http.Request) 
 
 	resp, err := e.s.ShortenURL(r.Context(), req)
 	if err != nil {
-		e.encodeResponse(w, err)
+		e.encodeError(w, err)
 		return
 	}
 
-	e.encodeResponse(w, resp)
+	e.encodeResponse(w, resp, 201)
 	return
 }
 
@@ -81,11 +82,11 @@ func (e *endpoints) LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Re
 
 	resp, err := e.s.LimitedShortenURL(r.Context(), req)
 	if err != nil {
-		e.encodeResponse(w, err)
+		e.encodeError(w, err)
 		return
 	}
 
-	e.encodeResponse(w, resp)
+	e.encodeResponse(w, resp, 201)
 	return
 }
 
@@ -94,7 +95,7 @@ func (e *endpoints) RedirectUrlHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := e.s.RedirectUrl(r.Context(), code)
 	if err != nil {
-		e.encodeResponse(w, err)
+		e.encodeError(w, err)
 		return
 	}
 
@@ -116,7 +117,24 @@ func (e *endpoints) decodeRequest(body io.ReadCloser, req interface{}) (err erro
 	return nil
 }
 
-func (e *endpoints) encodeResponse(w http.ResponseWriter, res interface{}) {
+func (e *endpoints) encodeResponse(w http.ResponseWriter, res interface{}, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(res)
+}
+
+func (e *endpoints) encodeError(w http.ResponseWriter, err error) {
+	var apiErr *models.Error
+
+	if ok := errors.As(err, &apiErr); !ok {
+		apiErr = models.InternalServerErr()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(apiErr.StatusCode)
+		json.NewEncoder(w).Encode(apiErr)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(apiErr.StatusCode)
+	json.NewEncoder(w).Encode(apiErr)
 }

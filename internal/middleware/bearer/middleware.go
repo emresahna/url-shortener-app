@@ -10,6 +10,7 @@ func BearerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		at := r.Header.Get("Authorization")
 		if at == "" {
+			http.Error(w, "Authorization required", http.StatusUnauthorized)
 			return
 		}
 
