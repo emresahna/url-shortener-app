@@ -40,6 +40,19 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts:/docker-entrypoint-initdb.d
 
+  pgbouncer:
+    container_name: url-shortener-pgbouncer
+    image: edoburu/pgbouncer
+    ports:
+      - "6432:6432"
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
   redis:
     container_name: url-shortener-redis
     image: redis:latest
