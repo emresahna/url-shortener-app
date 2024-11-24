@@ -20,8 +20,10 @@ type store struct {
 
 func NewRedisClient(cfg configs.RedisConfig, db int) (Store, error) {
 	rcc := redis.NewClient(&redis.Options{
-		Addr: cfg.Address,
-		DB:   db,
+		Addr:         cfg.Address,
+		DB:           db,
+		PoolSize:     20,
+		MinIdleConns: 5,
 	})
 
 	s := &store{

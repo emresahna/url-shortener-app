@@ -43,10 +43,15 @@ func main() {
 	go func() {
 		for msg := range ch {
 			now := time.Now()
-			sc.DeleteExpiredUrlByShortCode(context.TODO(), sqlc.DeleteExpiredUrlByShortCodeParams{
+			log.Printf("Initiating soft deletion for expired URL: %s\n", msg.Payload)
+			err := sc.DeleteExpiredUrlByShortCode(context.TODO(), sqlc.DeleteExpiredUrlByShortCodeParams{
 				DeletedAt:     &now,
 				ShortenedCode: msg.Payload,
 			})
+			if err != nil {
+				log.Printf("Error during soft deletion of URL %s: %v\n", msg.Payload, err)
+			}
+			log.Printf("Soft deletion completed successfully for URL: %s\n", msg.Payload)
 		}
 	}()
 
