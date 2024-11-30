@@ -21,3 +21,9 @@ where shortened_code = $1;
 UPDATE urls
 SET is_deleted = true, is_active = false, deleted_at = $1
 WHERE shortened_code = $2;
+
+-- Get Urls by User ID
+-- name: GetUrlsByUserID :many
+SELECT urls.original_url, urls.shortened_code, click_counts.total_clicks FROM urls
+JOIN click_counts ON click_counts.url_id = urls.id
+WHERE user_id = $1;

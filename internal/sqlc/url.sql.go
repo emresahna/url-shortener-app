@@ -88,3 +88,36 @@ func (q *Queries) GetURLByCode(ctx context.Context, shortenedCode string) (strin
 	err := row.Scan(&original_url)
 	return original_url, err
 }
+
+const getUrlsByUserID = `-- name: GetUrlsByUserID :many
+SELECT urls.original_url, urls.shortened_code, click_counts.total_clicks FROM urls
+JOIN click_counts ON click_counts.url_id = urls.id
+WHERE user_id = $1
+`
+
+type GetUrlsByUserIDRow struct {
+	OriginalUrl   string
+	ShortenedCode string
+	TotalClicks   int64
+}
+
+// Get Urls by User ID
+func (q *Queries) GetUrlsByUserID(ctx context.Context, userID *uuid.UUID) ([]GetUrlsByUserIDRow, error) {
+	rows, err := q.db.Query(ctx, getUrlsByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUrlsByUserIDRow
+	for rows.Next() {
+		var i GetUrlsByUserIDRow
+		if err := rows.Scan(&i.OriginalUrl, &i.ShortenedCode, &i.TotalClicks); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

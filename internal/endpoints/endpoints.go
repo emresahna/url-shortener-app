@@ -13,6 +13,7 @@ import (
 type Endpoints interface {
 	SignupUserHandler(w http.ResponseWriter, r *http.Request)
 	LoginUserHandler(w http.ResponseWriter, r *http.Request)
+	MeHandler(w http.ResponseWriter, r *http.Request)
 	UrlShortenerHandler(w http.ResponseWriter, r *http.Request)
 	LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Request)
 	RedirectUrlHandler(w http.ResponseWriter, r *http.Request)
@@ -47,6 +48,18 @@ func (e *endpoints) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := e.s.LoginUser(r.Context(), req)
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, 200)
+	return
+}
+
+func (e *endpoints) MeHandler(w http.ResponseWriter, r *http.Request) {
+	userId := chi.URLParam(r, "userId")
+	resp, err := e.s.Me(r.Context(), userId)
 	if err != nil {
 		e.encodeError(w, err)
 		return
@@ -99,8 +112,7 @@ func (e *endpoints) RedirectUrlHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Location", resp)
-	w.WriteHeader(http.StatusMovedPermanently)
+	e.encodeResponse(w, resp, 200)
 	return
 }
 

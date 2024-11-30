@@ -11,6 +11,7 @@ import (
 type Service interface {
 	SignupUser(context.Context, models.SignupUserRequest) (models.SignupUserResponse, error)
 	LoginUser(context.Context, models.LoginUserRequest) (models.LoginUserResponse, error)
+	Me(ctx context.Context, userId string) (models.UserResponse, error)
 	ShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
 	LimitedShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
 	RedirectUrl(context.Context, string) (string, error)

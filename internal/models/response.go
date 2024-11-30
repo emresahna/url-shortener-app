@@ -12,3 +12,14 @@ type LoginUserResponse struct {
 type ShortenURLResponse struct {
 	Url string `json:"url"`
 }
+
+type UserResponse struct {
+	Username string     `json:"username"`
+	Urls     []UserUrls `json:"urls"`
+}
+
+type UserUrls struct {
+	Url         string `json:"url"`
+	OriginalUrl string `json:"original_url"`
+	ClickCount  int64  `json:"click_count"`
+}
