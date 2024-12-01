@@ -6,6 +6,7 @@ import (
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/EmreSahna/url-shortener-app/internal/validator"
+	"log"
 	"time"
 )
 
@@ -18,10 +19,12 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	// Shorten url
 	shortenUrl := hash.GenerateUniqueCode()
 
+	duration := time.Minute * 10
+
 	// Save to redis
 	redisCh := make(chan error, 1)
 	go func() {
-		duration := time.Minute * 10
+		log.Printf("Starting to save limited shorten URL %s to Redis...", shortenUrl)
 		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 		if err != nil {
 			redisCh <- models.SaveToCacheErr()
@@ -29,10 +32,10 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 		redisCh <- err
 	}()
 
-	// Create url and click count record async
+	// Save to db
 	dbCh := make(chan error, 1)
 	go func() {
-		// Save to db
+		log.Printf("Starting to save limited shorten URL %s to PostgreSQL...", shortenUrl)
 		savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
 			OriginalUrl:   req.OriginalUrl,
 			ShortenedCode: shortenUrl,
@@ -51,10 +54,12 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	if err = <-dbCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
+	log.Printf("Successfully saved limited shorten URL %s to Redis.", shortenUrl)
 
 	if err = <-redisCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
+	log.Printf("Successfully saved limited shorten URL %s to PostgreSQL.", shortenUrl)
 
 	// Return
 	return models.ShortenURLResponse{

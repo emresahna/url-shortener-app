@@ -30,6 +30,21 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		return models.ShortenURLResponse{}, models.UrlNotValidErr()
 	}
 
+	// Validate duration
+	var duration time.Duration
+	if req.ExpireTime != nil {
+		expirationTime, err := time.Parse(time.RFC3339, *req.ExpireTime)
+		if err != nil {
+			return models.ShortenURLResponse{}, models.ParseExpireTimeErr()
+		}
+
+		if time.Now().After(expirationTime) {
+			return models.ShortenURLResponse{}, models.ExpireTimeAlreadyPassedErr()
+		}
+
+		duration = expirationTime.Sub(time.Now())
+	}
+
 	// Shorten url
 	shortenUrl := hash.GenerateUniqueCode()
 
@@ -37,20 +52,6 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 	redisCh := make(chan error, 1)
 	go func() {
 		log.Printf("Starting to save shortened URL %s to Redis...", shortenUrl)
-		duration := time.Second * 0
-		if req.ExpireTime != nil {
-			expirationTime, err := time.Parse(time.RFC3339, *req.ExpireTime)
-			if err != nil {
-				redisCh <- models.ParseExpireTimeErr()
-			}
-
-			if time.Now().After(expirationTime) {
-				redisCh <- models.ExpireTimeAlreadyPassedErr()
-			}
-
-			duration = expirationTime.Sub(time.Now())
-		}
-
 		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 		if err != nil {
 			redisCh <- models.SaveToCacheErr()
@@ -58,7 +59,7 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		redisCh <- err
 	}()
 
-	// Create url and click count record async
+	// Save to db
 	dbCh := make(chan error, 1)
 	go func() {
 		log.Printf("Starting to save shortened URL %s to PostgreSQL...", shortenUrl)
