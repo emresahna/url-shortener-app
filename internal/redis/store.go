@@ -2,9 +2,14 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"github.com/EmreSahna/url-shortener-app/configs"
 	"github.com/redis/go-redis/v9"
 	"time"
+)
+
+const (
+	ipAddrUsage = "free-tier-usage-%s"
 )
 
 type Store interface {
@@ -12,6 +17,9 @@ type Store interface {
 	SetUrlWithExpire(context.Context, string, string, time.Duration) error
 	GetUrl(context.Context, string) (string, error)
 	IncreaseClick(context.Context, string) error
+	SetIpAddrUsage(context.Context, string) error
+	IncreaseIpAddrUsage(context.Context, string) error
+	GetIpAddrUsage(context.Context, string) (int, error)
 }
 
 type store struct {
@@ -63,4 +71,28 @@ func (c *store) IncreaseClick(ctx context.Context, code string) error {
 		return err
 	}
 	return nil
+}
+
+func (c *store) SetIpAddrUsage(ctx context.Context, ip string) error {
+	err := c.rcc.SetEx(ctx, fmt.Sprintf(ipAddrUsage, ip), 1, time.Hour*24*30).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *store) IncreaseIpAddrUsage(ctx context.Context, ip string) error {
+	err := c.rcc.Incr(ctx, fmt.Sprintf(ipAddrUsage, ip)).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *store) GetIpAddrUsage(ctx context.Context, ip string) (int, error) {
+	count, err := c.rcc.Get(ctx, fmt.Sprintf(ipAddrUsage, ip)).Int()
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

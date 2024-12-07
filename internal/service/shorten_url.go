@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/EmreSahna/url-shortener-app/internal/hash"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/EmreSahna/url-shortener-app/internal/validator"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"log"
 	"time"
@@ -16,7 +18,11 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 	t := ctx.Value("token").(string)
 	c, err := s.jwt.Parse(t)
 	if err != nil {
-		return models.ShortenURLResponse{}, models.TokenFailureErr()
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return models.ShortenURLResponse{}, models.TokenExpiredErr()
+		} else if err != nil {
+			return models.ShortenURLResponse{}, models.TokenFailureErr()
+		}
 	}
 
 	// Parse user_id from token

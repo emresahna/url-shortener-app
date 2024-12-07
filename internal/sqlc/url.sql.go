@@ -13,15 +13,16 @@ import (
 )
 
 const createURL = `-- name: CreateURL :one
-INSERT INTO urls (original_url, shortened_code, user_id)
-VALUES ($1, $2, $3)
-RETURNING id, original_url, shortened_code, user_id
+INSERT INTO urls (original_url, shortened_code, user_id, ip_address)
+VALUES ($1, $2, $3, $4)
+RETURNING id, original_url, shortened_code, user_id, ip_address
 `
 
 type CreateURLParams struct {
 	OriginalUrl   string
 	ShortenedCode string
 	UserID        *uuid.UUID
+	IpAddress     *string
 }
 
 type CreateURLRow struct {
@@ -29,17 +30,24 @@ type CreateURLRow struct {
 	OriginalUrl   string
 	ShortenedCode string
 	UserID        *uuid.UUID
+	IpAddress     *string
 }
 
 // Create a new shortened URL for a specific user
 func (q *Queries) CreateURL(ctx context.Context, arg CreateURLParams) (CreateURLRow, error) {
-	row := q.db.QueryRow(ctx, createURL, arg.OriginalUrl, arg.ShortenedCode, arg.UserID)
+	row := q.db.QueryRow(ctx, createURL,
+		arg.OriginalUrl,
+		arg.ShortenedCode,
+		arg.UserID,
+		arg.IpAddress,
+	)
 	var i CreateURLRow
 	err := row.Scan(
 		&i.ID,
 		&i.OriginalUrl,
 		&i.ShortenedCode,
 		&i.UserID,
+		&i.IpAddress,
 	)
 	return i, err
 }
@@ -89,28 +97,33 @@ func (q *Queries) GetURLByCode(ctx context.Context, shortenedCode string) (strin
 	return original_url, err
 }
 
-const getUrlsByUserID = `-- name: GetUrlsByUserID :many
+const getUrlsByUser = `-- name: GetUrlsByUser :many
 SELECT urls.original_url, urls.shortened_code, click_counts.total_clicks FROM urls
 JOIN click_counts ON click_counts.url_id = urls.id
-WHERE user_id = $1
+WHERE user_id = $1 or ip_address = $2
 `
 
-type GetUrlsByUserIDRow struct {
+type GetUrlsByUserParams struct {
+	UserID    *uuid.UUID
+	IpAddress *string
+}
+
+type GetUrlsByUserRow struct {
 	OriginalUrl   string
 	ShortenedCode string
 	TotalClicks   int64
 }
 
 // Get Urls by User ID
-func (q *Queries) GetUrlsByUserID(ctx context.Context, userID *uuid.UUID) ([]GetUrlsByUserIDRow, error) {
-	rows, err := q.db.Query(ctx, getUrlsByUserID, userID)
+func (q *Queries) GetUrlsByUser(ctx context.Context, arg GetUrlsByUserParams) ([]GetUrlsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getUrlsByUser, arg.UserID, arg.IpAddress)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUrlsByUserIDRow
+	var items []GetUrlsByUserRow
 	for rows.Next() {
-		var i GetUrlsByUserIDRow
+		var i GetUrlsByUserRow
 		if err := rows.Scan(&i.OriginalUrl, &i.ShortenedCode, &i.TotalClicks); err != nil {
 			return nil, err
 		}

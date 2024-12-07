@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-func BearerMiddleware(next http.Handler) http.Handler {
+func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		at := r.Header.Get("Authorization")
 		if at == "" {
-			http.Error(w, "Authorization required", http.StatusUnauthorized)
+			next.ServeHTTP(w, r)
 			return
 		}
 

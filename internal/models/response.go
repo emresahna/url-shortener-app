@@ -14,8 +14,8 @@ type ShortenURLResponse struct {
 }
 
 type UserResponse struct {
-	Username string     `json:"username"`
-	Urls     []UserUrls `json:"urls"`
+	Username string     `json:"username,omitempty"`
+	Urls     []UserUrls `json:"urls,omitempty"`
 }
 
 type UserUrls struct {

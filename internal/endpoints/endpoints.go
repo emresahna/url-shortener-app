@@ -13,6 +13,7 @@ import (
 type Endpoints interface {
 	SignupUserHandler(w http.ResponseWriter, r *http.Request)
 	LoginUserHandler(w http.ResponseWriter, r *http.Request)
+	RefreshHandler(w http.ResponseWriter, r *http.Request)
 	MeHandler(w http.ResponseWriter, r *http.Request)
 	UrlShortenerHandler(w http.ResponseWriter, r *http.Request)
 	LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Request)
@@ -57,9 +58,25 @@ func (e *endpoints) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (e *endpoints) RefreshHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.RefreshTokenRequest
+	err := e.decodeRequest(r.Body, &req)
+	if err != nil {
+		return
+	}
+
+	resp, err := e.s.Refresh(r.Context(), req)
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, 200)
+	return
+}
+
 func (e *endpoints) MeHandler(w http.ResponseWriter, r *http.Request) {
-	userId := chi.URLParam(r, "userId")
-	resp, err := e.s.Me(r.Context(), userId)
+	resp, err := e.s.Me(r.Context())
 	if err != nil {
 		e.encodeError(w, err)
 		return

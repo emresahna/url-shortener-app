@@ -14,3 +14,7 @@ type ShortenURLRequest struct {
 	OriginalUrl string  `json:"original_url"`
 	ExpireTime  *string `json:"expire_time"`
 }
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}

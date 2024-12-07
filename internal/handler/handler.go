@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/EmreSahna/url-shortener-app/internal/endpoints"
 	"github.com/EmreSahna/url-shortener-app/internal/middleware/bearer"
+	"github.com/EmreSahna/url-shortener-app/internal/middleware/ipaddr"
 	"github.com/EmreSahna/url-shortener-app/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -22,14 +23,26 @@ func NewHandler(s service.Service) http.Handler {
 
 	r.Post("/signup", ep.SignupUserHandler)
 	r.Post("/login", ep.LoginUserHandler)
-	r.Get("/me/{userId}", ep.MeHandler)
+	r.Post("/refresh", ep.RefreshHandler)
 
 	r.Group(func(r chi.Router) {
-		r.Use(bearer.BearerMiddleware)
+		r.Use(ipaddr.Middleware)
+		r.Use(bearer.Middleware)
+		r.Get("/me", ep.MeHandler)
+	})
+
+	r.Get("/redirect/{code}", ep.RedirectUrlHandler)
+
+	r.Group(func(r chi.Router) {
+		r.Use(bearer.
+			Middleware)
 		r.Post("/shorten/url", ep.UrlShortenerHandler)
 	})
-	r.Get("/redirect/{code}", ep.RedirectUrlHandler)
-	r.Post("/shorten/limited-url", ep.LimitedUrlShortenerHandler)
+
+	r.Group(func(r chi.Router) {
+		r.Use(ipaddr.Middleware)
+		r.Post("/shorten/limited-url", ep.LimitedUrlShortenerHandler)
+	})
 
 	return r
 }

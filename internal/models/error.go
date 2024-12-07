@@ -39,6 +39,13 @@ func TokenFailureErr() *Error {
 	}
 }
 
+func TokenExpiredErr() *Error {
+	return &Error{
+		Message:    "Token expired.",
+		StatusCode: http.StatusUnauthorized,
+	}
+}
+
 func CustomerIdParseErr() *Error {
 	return &Error{
 		Message:    "Customer ID couldn't validate.",
@@ -119,6 +126,13 @@ func ErrorWhileCreatingUserErr() *Error {
 func UserAlreadyExistsErr() *Error {
 	return &Error{
 		Message:    "User already exists.",
+		StatusCode: http.StatusBadRequest,
+	}
+}
+
+func FreeTierExceedErr() *Error {
+	return &Error{
+		Message:    "Your free tier usage ended. Please try later...",
 		StatusCode: http.StatusBadRequest,
 	}
 }

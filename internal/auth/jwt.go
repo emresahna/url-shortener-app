@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	accessTokenExpireMin  = 10
-	refrestTokenExpireMin = 5
+	accessTokenExpireMin  = 3
+	refreshTokenExpireMin = 15
 )
 
 type Auth interface {
@@ -66,7 +66,7 @@ func (a *auth) createAccessToken(p *models.Payload) (string, error) {
 func (a *auth) createRefreshToken(p *models.Payload) (string, error) {
 	c := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
 		"id":  p.Id,
-		"exp": time.Now().Add(time.Minute * refrestTokenExpireMin).Unix(),
+		"exp": time.Now().Add(time.Minute * refreshTokenExpireMin).Unix(),
 	})
 
 	at, err := c.SignedString(a.pv)

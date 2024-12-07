@@ -1,8 +1,8 @@
 -- Create a new shortened URL for a specific user
 -- name: CreateURL :one
-INSERT INTO urls (original_url, shortened_code, user_id)
-VALUES ($1, $2, $3)
-RETURNING id, original_url, shortened_code, user_id;
+INSERT INTO urls (original_url, shortened_code, user_id, ip_address)
+VALUES ($1, $2, $3, $4)
+RETURNING id, original_url, shortened_code, user_id, ip_address;
 
 -- Get the original URL by shortened code
 -- name: GetURLByCode :one
@@ -23,7 +23,7 @@ SET is_deleted = true, is_active = false, deleted_at = $1
 WHERE shortened_code = $2;
 
 -- Get Urls by User ID
--- name: GetUrlsByUserID :many
+-- name: GetUrlsByUser :many
 SELECT urls.original_url, urls.shortened_code, click_counts.total_clicks FROM urls
 JOIN click_counts ON click_counts.url_id = urls.id
-WHERE user_id = $1;
+WHERE user_id = $1 or ip_address = $2;
