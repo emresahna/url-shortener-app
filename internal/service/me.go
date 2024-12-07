@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
+	"log"
 )
 
 func (s *service) Me(ctx context.Context) (models.UserResponse, error) {
@@ -17,6 +18,7 @@ func (s *service) Me(ctx context.Context) (models.UserResponse, error) {
 	var userUUID uuid.UUID
 
 	if token, ok := ctx.Value("token").(string); ok {
+		log.Printf("Getting information for user...")
 		// Parse token
 		claims, err := s.jwt.Parse(token)
 		if err != nil {
@@ -52,6 +54,7 @@ func (s *service) Me(ctx context.Context) (models.UserResponse, error) {
 			return models.UserResponse{}, err
 		}
 	} else {
+		log.Printf("Getting information for anynomus user...")
 		if ip, ok := ctx.Value("ip").(string); ok {
 			// Get URLs by IP address
 			urlsDB, err = s.db.GetUrlsByUser(ctx, sqlc.GetUrlsByUserParams{

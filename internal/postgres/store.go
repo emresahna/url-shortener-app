@@ -19,14 +19,16 @@ func NewDBClient(cfg configs.PostgresConfig) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("unable to parse connection string: %v", err)
 	}
 
-	config.BeforeAcquire = func(ctx context.Context, conn *pgx.Conn) bool {
-		log.Printf("Acquiring connection: %p", conn)
-		return true
-	}
+	if cfg.DetailedLogging {
+		config.BeforeAcquire = func(ctx context.Context, conn *pgx.Conn) bool {
+			log.Printf("Acquiring connection: %p", conn)
+			return true
+		}
 
-	config.AfterRelease = func(conn *pgx.Conn) bool {
-		log.Printf("Releasing connection: %p", conn)
-		return true
+		config.AfterRelease = func(conn *pgx.Conn) bool {
+			log.Printf("Releasing connection: %p", conn)
+			return true
+		}
 	}
 
 	config.HealthCheckPeriod = time.Minute * 1

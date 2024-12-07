@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+const (
+	freeTierMinute = 10
+)
+
 func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
 	// Get ip
 	ipAddr, ok := ctx.Value("ip").(string)
@@ -40,7 +44,7 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	// Shorten url
 	shortenUrl := hash.GenerateUniqueCode()
 
-	duration := time.Minute * 10
+	duration := time.Minute * freeTierMinute
 
 	// Save to redis
 	redisCh := make(chan error, 1)
@@ -78,7 +82,7 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	go func() {
 		log.Printf("Starting to increase free usage for %s...", ipAddr)
 		if isFirstUsage {
-			err = s.rcc.IncreaseIpAddrUsage(ctx, ipAddr)
+			err = s.rcc.SetIpAddrUsage(ctx, ipAddr)
 			if err != nil {
 				usageCh <- models.SaveToCacheErr()
 			}

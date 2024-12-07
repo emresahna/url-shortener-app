@@ -24,13 +24,14 @@ type HttpConfig struct {
 }
 
 type PostgresConfig struct {
-	Host     string `env:"POSTGRES_HOST"`
-	Port     uint16 `env:"POSTGRES_PORT"`
-	Database string `env:"POSTGRES_DB"`
-	User     string `env:"POSTGRES_USER"`
-	Password string `env:"POSTGRES_PASS"`
-	MaxConn  int32  `env:"POSTGRES_MAX_CONN"`
-	MinConn  int32  `env:"POSTGRES_MIN_CONN"`
+	Host            string `env:"POSTGRES_HOST"`
+	Port            uint16 `env:"POSTGRES_PORT"`
+	Database        string `env:"POSTGRES_DB"`
+	User            string `env:"POSTGRES_USER"`
+	Password        string `env:"POSTGRES_PASS"`
+	MaxConn         int32  `env:"POSTGRES_MAX_CONN"`
+	MinConn         int32  `env:"POSTGRES_MIN_CONN"`
+	DetailedLogging bool   `env:"POSTGRES_DETAILED_LOGGING"`
 }
 
 type RedisConfig struct {
