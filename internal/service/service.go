@@ -12,8 +12,9 @@ type Service interface {
 	SignupUser(context.Context, models.SignupUserRequest) (models.SignupUserResponse, error)
 	LoginUser(context.Context, models.LoginUserRequest) (models.LoginUserResponse, error)
 	Refresh(context.Context, models.RefreshTokenRequest) (models.LoginUserResponse, error)
-	Me(ctx context.Context) (models.UserResponse, error)
+	Me(context.Context) (models.UserResponse, error)
 	ShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
+	RemoveUrl(context.Context, string) (models.RemoveUrlResponse, error)
 	LimitedShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
 	RedirectUrl(context.Context, string) (string, error)
 }

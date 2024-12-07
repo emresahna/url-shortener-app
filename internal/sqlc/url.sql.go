@@ -97,10 +97,24 @@ func (q *Queries) GetURLByCode(ctx context.Context, shortenedCode string) (strin
 	return original_url, err
 }
 
+const getURLByID = `-- name: GetURLByID :one
+SELECT shortened_code
+FROM urls
+WHERE id = $1
+`
+
+// Get the original URL by url ID
+func (q *Queries) GetURLByID(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getURLByID, id)
+	var shortened_code string
+	err := row.Scan(&shortened_code)
+	return shortened_code, err
+}
+
 const getUrlsByUser = `-- name: GetUrlsByUser :many
-SELECT urls.original_url, urls.shortened_code, click_counts.total_clicks FROM urls
+SELECT urls.id, urls.original_url, urls.shortened_code, urls.is_active, urls.is_deleted, click_counts.total_clicks FROM urls
 JOIN click_counts ON click_counts.url_id = urls.id
-WHERE user_id = $1 or ip_address = $2
+WHERE (user_id = $1 or ip_address = $2) and is_deleted = False
 `
 
 type GetUrlsByUserParams struct {
@@ -109,12 +123,15 @@ type GetUrlsByUserParams struct {
 }
 
 type GetUrlsByUserRow struct {
+	ID            uuid.UUID
 	OriginalUrl   string
 	ShortenedCode string
+	IsActive      *bool
+	IsDeleted     *bool
 	TotalClicks   int64
 }
 
-// Get Urls by User ID
+// Get Urls by User ID or IpAddr
 func (q *Queries) GetUrlsByUser(ctx context.Context, arg GetUrlsByUserParams) ([]GetUrlsByUserRow, error) {
 	rows, err := q.db.Query(ctx, getUrlsByUser, arg.UserID, arg.IpAddress)
 	if err != nil {
@@ -124,7 +141,14 @@ func (q *Queries) GetUrlsByUser(ctx context.Context, arg GetUrlsByUserParams) ([
 	var items []GetUrlsByUserRow
 	for rows.Next() {
 		var i GetUrlsByUserRow
-		if err := rows.Scan(&i.OriginalUrl, &i.ShortenedCode, &i.TotalClicks); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.OriginalUrl,
+			&i.ShortenedCode,
+			&i.IsActive,
+			&i.IsDeleted,
+			&i.TotalClicks,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

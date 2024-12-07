@@ -68,9 +68,12 @@ func (s *service) Me(ctx context.Context) (models.UserResponse, error) {
 	urls := make([]models.UserUrls, len(urlsDB))
 	for v, i := range urlsDB {
 		urls[v] = models.UserUrls{
+			Id:          i.ID,
 			Url:         i.ShortenedCode,
 			OriginalUrl: i.OriginalUrl,
 			ClickCount:  i.TotalClicks,
+			IsActive:    i.IsActive,
+			IsDeleted:   i.IsDeleted,
 		}
 	}
 

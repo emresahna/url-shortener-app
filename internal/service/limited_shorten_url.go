@@ -105,7 +105,7 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	if err = <-usageCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
-	log.Printf("Successfully increased free usage for %s.", shortenUrl)
+	log.Printf("Successfully increased free usage for %s.", ipAddr)
 
 	// Return
 	return models.ShortenURLResponse{

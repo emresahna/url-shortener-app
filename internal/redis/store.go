@@ -16,6 +16,7 @@ type Store interface {
 	Ping(context.Context) error
 	SetUrlWithExpire(context.Context, string, string, time.Duration) error
 	GetUrl(context.Context, string) (string, error)
+	DeleteUrl(context.Context, string) error
 	IncreaseClick(context.Context, string) error
 	SetIpAddrUsage(context.Context, string) error
 	IncreaseIpAddrUsage(context.Context, string) error
@@ -63,6 +64,14 @@ func (c *store) GetUrl(ctx context.Context, code string) (string, error) {
 		return "", err
 	}
 	return result, nil
+}
+
+func (c *store) DeleteUrl(ctx context.Context, code string) error {
+	err := c.rcc.Del(ctx, code).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *store) IncreaseClick(ctx context.Context, code string) error {

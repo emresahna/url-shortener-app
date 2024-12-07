@@ -16,6 +16,7 @@ type Endpoints interface {
 	RefreshHandler(w http.ResponseWriter, r *http.Request)
 	MeHandler(w http.ResponseWriter, r *http.Request)
 	UrlShortenerHandler(w http.ResponseWriter, r *http.Request)
+	RemoveUrlHandler(w http.ResponseWriter, r *http.Request)
 	LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Request)
 	RedirectUrlHandler(w http.ResponseWriter, r *http.Request)
 }
@@ -100,6 +101,19 @@ func (e *endpoints) UrlShortenerHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	e.encodeResponse(w, resp, 201)
+	return
+}
+
+func (e *endpoints) RemoveUrlHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	resp, err := e.s.RemoveUrl(r.Context(), id)
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, 200)
 	return
 }
 

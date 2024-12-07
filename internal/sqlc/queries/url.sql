@@ -10,6 +10,12 @@ SELECT original_url
 FROM urls
 WHERE shortened_code = $1 and is_active = True and is_deleted = False;
 
+-- Get the original URL by url ID
+-- name: GetURLByID :one
+SELECT shortened_code
+FROM urls
+WHERE id = $1;
+
 -- Get url ID by short code
 -- name: GetIDByShortCode :one
 SELECT id
@@ -22,8 +28,8 @@ UPDATE urls
 SET is_deleted = true, is_active = false, deleted_at = $1
 WHERE shortened_code = $2;
 
--- Get Urls by User ID
+-- Get Urls by User ID or IpAddr
 -- name: GetUrlsByUser :many
-SELECT urls.original_url, urls.shortened_code, click_counts.total_clicks FROM urls
+SELECT urls.id, urls.original_url, urls.shortened_code, urls.is_active, urls.is_deleted, click_counts.total_clicks FROM urls
 JOIN click_counts ON click_counts.url_id = urls.id
-WHERE user_id = $1 or ip_address = $2;
+WHERE (user_id = $1 or ip_address = $2) and is_deleted = False;
