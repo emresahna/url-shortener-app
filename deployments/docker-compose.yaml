@@ -1,20 +1,27 @@
 services:
   shortener-app:
-    container_name: url-shortener-app
     build:
       context: ..
       dockerfile: cmd/http_server/Dockerfile
     env_file: base.env
     ports:
-      - "8000:8000"
+      - "8000"
     depends_on:
       - postgres
       - redis
     networks:
       - app_network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
 
   shortener-scheduler:
-    container_name: url-shortener-scheduler
     build:
       context: ..
       dockerfile: cmd/async_server/Dockerfile
@@ -24,27 +31,43 @@ services:
       - redis
     networks:
       - app_network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
 
   postgres:
-    container_name: url-shortener-postgres
     image: postgres:latest
     environment:
       POSTGRES_DB: "url-shortener-db"
       POSTGRES_USER: "url-shortener-db-user"
       POSTGRES_PASSWORD: "url-shortener-db-pass"
     ports:
-      - "5432:5432"
+      - "5432"
     networks:
       - app_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts:/docker-entrypoint-initdb.d
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
 
   pgbouncer:
-    container_name: url-shortener-pgbouncer
     image: edoburu/pgbouncer
     ports:
-      - "6432:6432"
+      - "6432"
     volumes:
       - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
       - ./userlist.txt:/etc/pgbouncer/userlist.txt
@@ -52,17 +75,34 @@ services:
       - postgres
     networks:
       - app_network
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
 
   redis:
-    container_name: url-shortener-redis
     image: redis:latest
     ports:
-      - "6379:6379"
+      - "6379"
     networks:
       - app_network
     volumes:
       - redis_data:/data
     command: ["redis-server", "--notify-keyspace-events", "Ex"]
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
 
   migrate:
     image: arigaio/atlas:latest
@@ -75,6 +115,17 @@ services:
       - app_network
     volumes:
       - ./migrations/:/migrations
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - shortener-app
+    networks:
+      - app_network
 
 networks:
   app_network:

@@ -13,9 +13,7 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		tempIp := "127.0.0.1"
-
-		ctx := context.WithValue(r.Context(), "ip", tempIp)
+		ctx := context.WithValue(r.Context(), "ip", ip)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
