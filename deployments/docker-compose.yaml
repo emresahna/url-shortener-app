@@ -1,29 +1,29 @@
 services:
-#  shortener-app:
-#    container_name: url-shortener-app
-#    build:
-#      context: ..
-#      dockerfile: cmd/http_server/Dockerfile
-#    env_file: base.env
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      - postgres
-#      - redis
-#    networks:
-#      - app_network
-#
-#  shortener-scheduler:
-#    container_name: url-shortener-scheduler
-#    build:
-#      context: ..
-#      dockerfile: cmd/async_server/Dockerfile
-#    env_file: base.env
-#    depends_on:
-#      - postgres
-#      - redis
-#    networks:
-#      - app_network
+  shortener-app:
+    container_name: url-shortener-app
+    build:
+      context: ..
+      dockerfile: cmd/http_server/Dockerfile
+    env_file: base.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app_network
+
+  shortener-scheduler:
+    container_name: url-shortener-scheduler
+    build:
+      context: ..
+      dockerfile: cmd/async_server/Dockerfile
+    env_file: base.env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app_network
 
   postgres:
     container_name: url-shortener-postgres
