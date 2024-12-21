@@ -14,17 +14,18 @@ import (
 const incrementClickCount = `-- name: IncrementClickCount :exec
 UPDATE click_counts
 SET total_clicks = total_clicks + $1
-WHERE url_id = $2
+    FROM urls
+WHERE click_counts.url_id = urls.id AND urls.shortened_code = $2
 `
 
 type IncrementClickCountParams struct {
-	TotalClicks int64
-	UrlID       uuid.UUID
+	TotalClicks   int64
+	ShortenedCode string
 }
 
 // Increment click count
 func (q *Queries) IncrementClickCount(ctx context.Context, arg IncrementClickCountParams) error {
-	_, err := q.db.Exec(ctx, incrementClickCount, arg.TotalClicks, arg.UrlID)
+	_, err := q.db.Exec(ctx, incrementClickCount, arg.TotalClicks, arg.ShortenedCode)
 	return err
 }
 

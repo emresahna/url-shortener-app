@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/hibiken/asynq"
+	"log"
 	"strings"
 )
 
@@ -11,20 +12,32 @@ func (ts *task) IncreaseClickTask(ctx context.Context, t *asynq.Task) error {
 	keys, _ := ts.rc.Keys(ctx, "clicks:*").Result()
 
 	for _, key := range keys {
-		shortCode := strings.Split(key, ":")
-
-		urlID, _ := ts.db.GetIDByShortCode(ctx, shortCode[1])
-
-		count, _ := ts.rc.Get(ctx, key).Int64()
-
-		incrementReq := sqlc.IncrementClickCountParams{
-			UrlID:       urlID,
-			TotalClicks: count,
+		count, err := ts.rc.Get(ctx, key).Int64()
+		if err != nil {
+			log.Printf("Key not found in Redis: %s\n", key)
 		}
 
-		_ = ts.db.IncrementClickCount(ctx, incrementReq)
+		parts := strings.Split(key, ":")
+		if len(parts) < 2 {
+			log.Printf("Key parts are missing: %s\n", key)
+		}
 
-		_ = ts.rc.Del(ctx, key).Err()
+		shortCode := parts[1]
+
+		incrementReq := sqlc.IncrementClickCountParams{
+			ShortenedCode: shortCode,
+			TotalClicks:   count,
+		}
+
+		err = ts.db.IncrementClickCount(ctx, incrementReq)
+		if err != nil {
+			log.Printf("Error while incrementing click counts: %s\n", key)
+		}
+
+		err = ts.rc.Del(ctx, key).Err()
+		if err != nil {
+			log.Printf("Error while deleting click counts: %s\n", key)
+		}
 	}
 
 	return nil

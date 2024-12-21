@@ -31,8 +31,8 @@ func NewRedisClient(cfg configs.RedisConfig, db int) (Store, error) {
 	rcc := redis.NewClient(&redis.Options{
 		Addr:         cfg.Address,
 		DB:           db,
-		PoolSize:     20,
-		MinIdleConns: 5,
+		PoolSize:     cfg.PoolSize,
+		MinIdleConns: cfg.MinIdleConns,
 	})
 
 	s := &store{

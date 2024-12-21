@@ -13,3 +13,11 @@ WHERE id = $1;
 -- name: GetUserByUsername :one
 SELECT * FROM users
 WHERE username = $1;
+
+-- Check username already taken
+-- name: UserExists :one
+SELECT EXISTS(
+    SELECT 1
+    FROM users
+    WHERE username = $1
+) AS exists;

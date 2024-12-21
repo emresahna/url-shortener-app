@@ -10,10 +10,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"log"
-	"time"
 )
 
 func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+	// Validate url
+	if !validator.ValidateURL(req.OriginalUrl) {
+		return models.ShortenURLResponse{}, models.UrlNotValidErr()
+	}
+
 	// Parse token from string
 	t := ctx.Value("token").(string)
 	c, err := s.jwt.Parse(t)
@@ -31,24 +35,10 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		return models.ShortenURLResponse{}, models.CustomerIdParseErr()
 	}
 
-	// Validate url
-	if !validator.ValidateURL(req.OriginalUrl) {
-		return models.ShortenURLResponse{}, models.UrlNotValidErr()
-	}
-
 	// Validate duration
-	var duration time.Duration
-	if req.ExpireTime != nil {
-		expirationTime, err := time.Parse(time.RFC3339, *req.ExpireTime)
-		if err != nil {
-			return models.ShortenURLResponse{}, models.ParseExpireTimeErr()
-		}
-
-		if time.Now().After(expirationTime) {
-			return models.ShortenURLResponse{}, models.ExpireTimeAlreadyPassedErr()
-		}
-
-		duration = expirationTime.Sub(time.Now())
+	duration, err := validator.ValidateExpireDate(req.ExpireTime)
+	if err != nil {
+		return models.ShortenURLResponse{}, err
 	}
 
 	// Shorten url

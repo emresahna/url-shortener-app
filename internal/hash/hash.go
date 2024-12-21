@@ -1,33 +1,29 @@
 package hash
 
 import (
-	"github.com/google/uuid"
+	"math/rand"
+	"time"
 )
 
 const (
 	base62Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 )
 
-func toBase62(num int64) string {
+var (
+	r = rand.New(rand.NewSource(time.Now().Unix()))
+)
+
+func toBase62(num int) string {
 	return string(base62Chars[num%62])
 }
 
 func GenerateUniqueCode() string {
-	rand := uuid.New().String()
-
-	chunkSize := len(rand) / 7
+	chunkSize := 5
 	var result string
 	for i := 0; i < 7; i++ {
-		start := i * chunkSize
-		end := (i + 1) * chunkSize
-		if end > len(rand) {
-			end = len(rand)
-		}
-		chunk := rand[start:end]
-
-		var sum int64
-		for _, c := range chunk {
-			sum += int64(c)
+		var sum int
+		for i := 0; i < chunkSize; i++ {
+			sum += r.Intn(100)
 		}
 
 		result += toBase62(sum)

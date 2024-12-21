@@ -2,7 +2,8 @@
 -- name: IncrementClickCount :exec
 UPDATE click_counts
 SET total_clicks = total_clicks + $1
-WHERE url_id = $2;
+    FROM urls
+WHERE click_counts.url_id = urls.id AND urls.shortened_code = $2;
 
 -- Create click count record
 -- name: InsertClickCount :exec

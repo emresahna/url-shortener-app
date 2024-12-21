@@ -17,6 +17,11 @@ const (
 )
 
 func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+	// Validate url
+	if !validator.ValidateURL(req.OriginalUrl) {
+		return models.ShortenURLResponse{}, models.UrlNotValidErr()
+	}
+
 	// Get ip
 	ipAddr, ok := ctx.Value("ip").(string)
 	if !ok {
@@ -34,11 +39,6 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 
 	if count >= 3 {
 		return models.ShortenURLResponse{}, models.FreeTierExceedErr()
-	}
-
-	// Validate url
-	if !validator.ValidateURL(req.OriginalUrl) {
-		return models.ShortenURLResponse{}, models.UrlNotValidErr()
 	}
 
 	// Shorten url
