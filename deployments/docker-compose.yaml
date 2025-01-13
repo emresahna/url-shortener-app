@@ -17,9 +17,6 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
-        reservations:
-          cpus: '0.2'
-          memory: 256M
 
   shortener-scheduler:
     build:
@@ -37,9 +34,6 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
-        reservations:
-          cpus: '0.2'
-          memory: 256M
 
   postgres:
     image: postgres:latest
@@ -60,9 +54,6 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
-        reservations:
-          cpus: '0.2'
-          memory: 256M
 
   pgbouncer:
     image: edoburu/pgbouncer
@@ -81,9 +72,6 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
-        reservations:
-          cpus: '0.2'
-          memory: 256M
 
   redis:
     image: redis:latest
@@ -100,9 +88,6 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
-        reservations:
-          cpus: '0.2'
-          memory: 256M
 
   migrate:
     image: arigaio/atlas:latest
