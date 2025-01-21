@@ -20,11 +20,12 @@ func main() {
 	}
 
 	// initialize postgres client
-	db, err := postgres.NewDBClient(cfg.PostgresConfig)
+	ctx := context.Background()
+	db, err := postgres.NewDBClient(ctx, cfg.PostgresConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer db.Close(ctx)
 
 	// initialize sqlc client
 	sc := sqlc.New(db)
@@ -35,7 +36,7 @@ func main() {
 		DB:   cfg.RedisConfig.AnalyticDB,
 	})
 
-	pubSub := ra.PSubscribe(context.TODO(), "__keyevent@0__:expired")
+	pubSub := ra.PSubscribe(ctx, "__keyevent@0__:expired")
 	ch := pubSub.Channel()
 
 	defer pubSub.Close()

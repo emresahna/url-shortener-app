@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/EmreSahna/url-shortener-app/configs"
 	"github.com/EmreSahna/url-shortener-app/internal/auth"
@@ -39,11 +40,12 @@ func main() {
 	}
 
 	// initialize postgres client
-	db, err := postgres.NewDBClient(cfg.PostgresConfig)
+	ctx := context.Background()
+	db, err := postgres.NewDBClient(ctx, cfg.PostgresConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer db.Close(ctx)
 
 	// initialize sqlc client
 	sc := sqlc.New(db)
