@@ -21,7 +21,7 @@ func main() {
 
 	// initialize postgres client
 	ctx := context.Background()
-	db, err := postgres.NewDBClient(ctx, cfg.PostgresConfig)
+	db, err := postgres.NewDBClient(ctx, cfg.Postgres)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,8 +32,8 @@ func main() {
 
 	// initialize redis client cache
 	ra := redis.NewClient(&redis.Options{
-		Addr: cfg.RedisConfig.Address,
-		DB:   cfg.RedisConfig.AnalyticDB,
+		Addr: cfg.Redis.Address,
+		DB:   cfg.Redis.AnalyticDB,
 	})
 
 	pubSub := ra.PSubscribe(ctx, "__keyevent@0__:expired")
@@ -58,16 +58,16 @@ func main() {
 
 	// initialize redis client analytics
 	rc := redis.NewClient(&redis.Options{
-		Addr: cfg.RedisConfig.Address,
-		DB:   cfg.RedisConfig.AnalyticDB,
+		Addr: cfg.Redis.Address,
+		DB:   cfg.Redis.AnalyticDB,
 	})
 
 	ts := task.NewTask(sc, rc)
 
 	// initialize async server
 	srv := asynq.NewServer(asynq.RedisClientOpt{
-		Addr: cfg.RedisConfig.Address,
-		DB:   cfg.RedisConfig.SchedulerDB,
+		Addr: cfg.Redis.Address,
+		DB:   cfg.Redis.SchedulerDB,
 	}, asynq.Config{
 		Concurrency: 10,
 	})
@@ -82,8 +82,8 @@ func main() {
 	}()
 
 	scheduler := asynq.NewScheduler(asynq.RedisClientOpt{
-		Addr: cfg.RedisConfig.Address,
-		DB:   cfg.RedisConfig.SchedulerDB,
+		Addr: cfg.Redis.Address,
+		DB:   cfg.Redis.SchedulerDB,
 	}, nil)
 
 	_, err = scheduler.Register("@every 10s", asynq.NewTask("click:increase", nil))

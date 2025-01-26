@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/EmreSahna/url-shortener-app/configs"
 	"github.com/EmreSahna/url-shortener-app/internal/endpoints"
 	"github.com/EmreSahna/url-shortener-app/internal/middleware/bearer"
 	"github.com/EmreSahna/url-shortener-app/internal/middleware/ipaddr"
@@ -10,37 +11,37 @@ import (
 	"net/http"
 )
 
-func NewHandler(s service.Service) http.Handler {
+func NewHttpHandler(s service.Service, cfg configs.Cors) http.Handler {
 	ep := endpoints.NewEndpoints(s)
 
 	r := chi.NewRouter()
 
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000"},
-		AllowedMethods: []string{"GET", "POST", "DELETE"},
-		AllowedHeaders: []string{"Content-Type", "Authorization"},
+		AllowedOrigins: cfg.AllowedOrigins,
+		AllowedMethods: cfg.AllowedMethods,
+		AllowedHeaders: cfg.AllowedHeaders,
 	}))
 
-	r.Post("/signup", ep.SignupUserHandler)
-	r.Post("/login", ep.LoginUserHandler)
-	r.Post("/refresh", ep.RefreshHandler)
-	r.Get("/redirect/{code}", ep.RedirectUrlHandler)
+	r.Post("/user/signup", ep.UserSignupHandler)
+	r.Post("/user/login", ep.UserLoginHandler)
+	r.Post("/token/refresh", ep.TokenRefreshHandler)
+	r.Get("/url/redirect/{code}", ep.UrlRedirectHandler)
 
 	r.Group(func(r chi.Router) {
 		r.Use(ipaddr.Middleware)
 		r.Use(bearer.Middleware)
-		r.Get("/me", ep.MeHandler)
+		r.Get("/user/me", ep.UserMeHandler)
 	})
 
 	r.Group(func(r chi.Router) {
 		r.Use(bearer.Middleware)
-		r.Post("/shorten/url", ep.UrlShortenerHandler)
-		r.Delete("/url/{id}", ep.RemoveUrlHandler)
+		r.Post("/url/shorten/user", ep.UrlShortenUserHandler)
+		r.Delete("/url/remove/{id}", ep.UrlRemoveHandler)
 	})
 
 	r.Group(func(r chi.Router) {
 		r.Use(ipaddr.Middleware)
-		r.Post("/shorten/limited-url", ep.LimitedUrlShortenerHandler)
+		r.Post("/url/shorten/guest", ep.UrlShortenGuestHandler)
 	})
 
 	return r

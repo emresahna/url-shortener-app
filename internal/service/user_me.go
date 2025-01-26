@@ -11,7 +11,7 @@ import (
 	"log"
 )
 
-func (s *service) Me(ctx context.Context) (models.UserResponse, error) {
+func (s *service) UserMe(ctx context.Context) (models.UserResponse, error) {
 	var urlsDB []sqlc.GetUrlsByUserRow
 	var err error
 	var userDB sqlc.User

@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	freeTierMinute = 10
+	freeTierMinute   = 10
+	freeTierDuration = time.Minute * freeTierMinute
 )
 
-func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
 	// Validate url
 	if !validator.ValidateURL(req.OriginalUrl) {
 		return models.ShortenURLResponse{}, models.UrlNotValidErr()
@@ -44,13 +45,11 @@ func (s *service) LimitedShortenURL(ctx context.Context, req models.ShortenURLRe
 	// Shorten url
 	shortenUrl := hash.GenerateUniqueCode()
 
-	duration := time.Minute * freeTierMinute
-
 	// Save to redis
 	redisCh := make(chan error, 1)
 	go func() {
 		log.Printf("Starting to save limited shorten URL %s to Redis...", shortenUrl)
-		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
+		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, freeTierDuration)
 		if err != nil {
 			redisCh <- models.SaveToCacheErr()
 		}

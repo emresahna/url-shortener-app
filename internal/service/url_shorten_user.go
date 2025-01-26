@@ -12,7 +12,7 @@ import (
 	"log"
 )
 
-func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
 	// Validate url
 	if !validator.ValidateURL(req.OriginalUrl) {
 		return models.ShortenURLResponse{}, models.UrlNotValidErr()
@@ -29,7 +29,7 @@ func (s *service) ShortenURL(ctx context.Context, req models.ShortenURLRequest) 
 		}
 	}
 
-	// Parse user_id from token
+	// Parse user id from token
 	userUUID, err := uuid.Parse(c["id"].(string))
 	if err != nil {
 		return models.ShortenURLResponse{}, models.CustomerIdParseErr()

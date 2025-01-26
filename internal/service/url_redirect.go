@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-func (s *service) RedirectUrl(ctx context.Context, code string) (res string, err error) {
+func (s *service) UrlRedirect(ctx context.Context, code string) (res string, err error) {
 	var original string
 
 	// Check redis

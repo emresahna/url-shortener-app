@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *service) SignupUser(ctx context.Context, req models.SignupUserRequest) (res models.SignupUserResponse, err error) {
+func (s *service) UserSignup(ctx context.Context, req models.SignupUserRequest) (res models.SignupUserResponse, err error) {
 	// Check username already taken
 	exists, err := s.db.UserExists(ctx, req.Username)
 	if err != nil {

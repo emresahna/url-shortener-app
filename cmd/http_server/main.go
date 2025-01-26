@@ -22,26 +22,26 @@ func main() {
 	}
 
 	// initialize jwt client
-	jwt, err := auth.NewJWTAuth(cfg.AuthConfig)
+	jwt, err := auth.NewJWTAuth(cfg.Auth)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// initialize redis client for cache
-	rcc, err := redis.NewRedisClient(cfg.RedisConfig, cfg.RedisConfig.CacheDB)
+	rcc, err := redis.NewRedisClient(cfg.Redis, cfg.Redis.CacheDB)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// initialize redis client for analytics
-	rca, err := redis.NewRedisClient(cfg.RedisConfig, cfg.RedisConfig.AnalyticDB)
+	rca, err := redis.NewRedisClient(cfg.Redis, cfg.Redis.AnalyticDB)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// initialize postgres client
 	ctx := context.Background()
-	db, err := postgres.NewDBClient(ctx, cfg.PostgresConfig)
+	db, err := postgres.NewDBClient(ctx, cfg.Postgres)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,19 +54,19 @@ func main() {
 	serv := service.NewService(sc, rcc, jwt, rca)
 
 	// initialize handler
-	h := handler.NewHandler(serv)
+	h := handler.NewHttpHandler(serv, cfg.Cors)
 
 	// initialize http server
 	hs := http.Server{
 		Handler:        h,
-		Addr:           cfg.HttpConfig.Address,
-		ReadTimeout:    cfg.HttpConfig.ReadTimeout,
-		WriteTimeout:   cfg.HttpConfig.WriteTimeout,
-		IdleTimeout:    cfg.HttpConfig.IdleTimeout,
-		MaxHeaderBytes: cfg.HttpConfig.MaxHeaderBytes,
+		Addr:           cfg.Http.Address,
+		ReadTimeout:    cfg.Http.ReadTimeout,
+		WriteTimeout:   cfg.Http.WriteTimeout,
+		IdleTimeout:    cfg.Http.IdleTimeout,
+		MaxHeaderBytes: cfg.Http.MaxHeaderBytes,
 	}
 
-	fmt.Printf("Server running on %s", cfg.HttpConfig.Address)
+	fmt.Printf("Server running on %s", cfg.Http.Address)
 	if err = hs.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}

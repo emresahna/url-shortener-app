@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-func (s *service) Refresh(ctx context.Context, req models.RefreshTokenRequest) (res models.LoginUserResponse, err error) {
+func (s *service) TokenRefresh(ctx context.Context, req models.RefreshTokenRequest) (res models.LoginUserResponse, err error) {
 	// Parse refresh token
 	claims, err := s.jwt.Parse(req.RefreshToken)
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func (s *service) LoginUser(ctx context.Context, req models.LoginUserRequest) (res models.LoginUserResponse, err error) {
+func (s *service) UserLogin(ctx context.Context, req models.LoginUserRequest) (res models.LoginUserResponse, err error) {
 	// Get user from db
 	log.Printf("Checking user record for that username...")
 	user, err := s.db.GetUserByUsername(ctx, req.Username)

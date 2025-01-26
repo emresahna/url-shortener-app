@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (s *service) RemoveUrl(ctx context.Context, id string) (res models.RemoveUrlResponse, err error) {
+func (s *service) UrlRemove(ctx context.Context, id string) (res models.RemoveUrlResponse, err error) {
 	// Parse url id
 	urlUUID, err := uuid.Parse(id)
 	if err != nil {

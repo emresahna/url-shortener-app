@@ -9,13 +9,14 @@ import (
 )
 
 type Config struct {
-	HttpConfig     HttpConfig
-	PostgresConfig PostgresConfig
-	RedisConfig    RedisConfig
-	AuthConfig     AuthConfig
+	Http
+	Postgres
+	Redis
+	Auth
+	Cors
 }
 
-type HttpConfig struct {
+type Http struct {
 	Address        string        `env:"SERVER_ADDRESS"`
 	WriteTimeout   time.Duration `env:"SERVER_WRITE_TIMEOUT"`
 	ReadTimeout    time.Duration `env:"SERVER_READ_TIMEOUT"`
@@ -23,7 +24,7 @@ type HttpConfig struct {
 	MaxHeaderBytes int           `env:"SERVER_MAX_HEADER_BYTES"`
 }
 
-type PostgresConfig struct {
+type Postgres struct {
 	Host            string `env:"POSTGRES_HOST"`
 	Port            uint16 `env:"POSTGRES_PORT"`
 	Database        string `env:"POSTGRES_DB"`
@@ -32,7 +33,7 @@ type PostgresConfig struct {
 	DetailedLogging bool   `env:"POSTGRES_DETAILED_LOGGING"`
 }
 
-type RedisConfig struct {
+type Redis struct {
 	Address      string `env:"REDIS_ADDRESS"`
 	CacheDB      int    `env:"REDIS_CACHE_DB"`
 	AnalyticDB   int    `env:"REDIS_ANALYTIC_DB"`
@@ -41,9 +42,15 @@ type RedisConfig struct {
 	MinIdleConns int    `env:"REDIS_MIN_IDLE_CONNS"`
 }
 
-type AuthConfig struct {
+type Auth struct {
 	PrivateKeyPath string `env:"PRIVATE_KEY_PATH"`
 	PublicKeyPath  string `env:"PUBLIC_KEY_PATH"`
+}
+
+type Cors struct {
+	AllowedOrigins []string `env:"ALLOWED_ORIGINS"`
+	AllowedMethods []string `env:"ALLOWED_METHODS"`
+	AllowedHeaders []string `env:"ALLOWED_HEADERS"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -52,30 +59,36 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	var hc HttpConfig
+	var hc Http
 	if err = env.Parse(&hc); err != nil {
 		return nil, err
 	}
 
-	var pc PostgresConfig
+	var pc Postgres
 	if err = env.Parse(&pc); err != nil {
 		return nil, err
 	}
 
-	var rc RedisConfig
+	var rc Redis
 	if err = env.Parse(&rc); err != nil {
 		return nil, err
 	}
 
-	var ac AuthConfig
+	var ac Auth
+	if err = env.Parse(&ac); err != nil {
+		return nil, err
+	}
+
+	var cc Cors
 	if err = env.Parse(&ac); err != nil {
 		return nil, err
 	}
 
 	return &Config{
-		HttpConfig:     hc,
-		PostgresConfig: pc,
-		RedisConfig:    rc,
-		AuthConfig:     ac,
+		Http:     hc,
+		Postgres: pc,
+		Redis:    rc,
+		Auth:     ac,
+		Cors:     cc,
 	}, nil
 }

@@ -11,62 +11,28 @@ import (
 )
 
 type Endpoints interface {
-	SignupUserHandler(w http.ResponseWriter, r *http.Request)
-	LoginUserHandler(w http.ResponseWriter, r *http.Request)
-	RefreshHandler(w http.ResponseWriter, r *http.Request)
-	MeHandler(w http.ResponseWriter, r *http.Request)
-	UrlShortenerHandler(w http.ResponseWriter, r *http.Request)
-	RemoveUrlHandler(w http.ResponseWriter, r *http.Request)
-	LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Request)
-	RedirectUrlHandler(w http.ResponseWriter, r *http.Request)
+	TokenRefreshHandler(w http.ResponseWriter, r *http.Request)
+	UserMeHandler(w http.ResponseWriter, r *http.Request)
+	UserSignupHandler(w http.ResponseWriter, r *http.Request)
+	UserLoginHandler(w http.ResponseWriter, r *http.Request)
+	UrlShortenUserHandler(w http.ResponseWriter, r *http.Request)
+	UrlRemoveHandler(w http.ResponseWriter, r *http.Request)
+	UrlShortenGuestHandler(w http.ResponseWriter, r *http.Request)
+	UrlRedirectHandler(w http.ResponseWriter, r *http.Request)
 }
 
 type endpoints struct {
 	s service.Service
 }
 
-func (e *endpoints) SignupUserHandler(w http.ResponseWriter, r *http.Request) {
-	var req models.SignupUserRequest
-	err := e.decodeRequest(r.Body, &req)
-	if err != nil {
-		return
-	}
-
-	resp, err := e.s.SignupUser(r.Context(), req)
-	if err != nil {
-		e.encodeError(w, err)
-		return
-	}
-
-	e.encodeResponse(w, resp, 201)
-	return
-}
-
-func (e *endpoints) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
-	var req models.LoginUserRequest
-	err := e.decodeRequest(r.Body, &req)
-	if err != nil {
-		return
-	}
-
-	resp, err := e.s.LoginUser(r.Context(), req)
-	if err != nil {
-		e.encodeError(w, err)
-		return
-	}
-
-	e.encodeResponse(w, resp, 200)
-	return
-}
-
-func (e *endpoints) RefreshHandler(w http.ResponseWriter, r *http.Request) {
+func (e *endpoints) TokenRefreshHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.RefreshTokenRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
 		return
 	}
 
-	resp, err := e.s.Refresh(r.Context(), req)
+	resp, err := e.s.TokenRefresh(r.Context(), req)
 	if err != nil {
 		e.encodeError(w, err)
 		return
@@ -76,8 +42,8 @@ func (e *endpoints) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (e *endpoints) MeHandler(w http.ResponseWriter, r *http.Request) {
-	resp, err := e.s.Me(r.Context())
+func (e *endpoints) UserMeHandler(w http.ResponseWriter, r *http.Request) {
+	resp, err := e.s.UserMe(r.Context())
 	if err != nil {
 		e.encodeError(w, err)
 		return
@@ -87,14 +53,14 @@ func (e *endpoints) MeHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (e *endpoints) UrlShortenerHandler(w http.ResponseWriter, r *http.Request) {
-	var req models.ShortenURLRequest
+func (e *endpoints) UserSignupHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.SignupUserRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
 		return
 	}
 
-	resp, err := e.s.ShortenURL(r.Context(), req)
+	resp, err := e.s.UserSignup(r.Context(), req)
 	if err != nil {
 		e.encodeError(w, err)
 		return
@@ -104,10 +70,44 @@ func (e *endpoints) UrlShortenerHandler(w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-func (e *endpoints) RemoveUrlHandler(w http.ResponseWriter, r *http.Request) {
+func (e *endpoints) UserLoginHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.LoginUserRequest
+	err := e.decodeRequest(r.Body, &req)
+	if err != nil {
+		return
+	}
+
+	resp, err := e.s.UserLogin(r.Context(), req)
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, 200)
+	return
+}
+
+func (e *endpoints) UrlShortenUserHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.ShortenURLRequest
+	err := e.decodeRequest(r.Body, &req)
+	if err != nil {
+		return
+	}
+
+	resp, err := e.s.UrlShortenUser(r.Context(), req)
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, 201)
+	return
+}
+
+func (e *endpoints) UrlRemoveHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	resp, err := e.s.RemoveUrl(r.Context(), id)
+	resp, err := e.s.UrlRemove(r.Context(), id)
 	if err != nil {
 		e.encodeError(w, err)
 		return
@@ -117,14 +117,14 @@ func (e *endpoints) RemoveUrlHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (e *endpoints) LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Request) {
+func (e *endpoints) UrlShortenGuestHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.ShortenURLRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
 		return
 	}
 
-	resp, err := e.s.LimitedShortenURL(r.Context(), req)
+	resp, err := e.s.UrlShortenGuest(r.Context(), req)
 	if err != nil {
 		e.encodeError(w, err)
 		return
@@ -134,10 +134,10 @@ func (e *endpoints) LimitedUrlShortenerHandler(w http.ResponseWriter, r *http.Re
 	return
 }
 
-func (e *endpoints) RedirectUrlHandler(w http.ResponseWriter, r *http.Request) {
+func (e *endpoints) UrlRedirectHandler(w http.ResponseWriter, r *http.Request) {
 	code := chi.URLParam(r, "code")
 
-	resp, err := e.s.RedirectUrl(r.Context(), code)
+	resp, err := e.s.UrlRedirect(r.Context(), code)
 	if err != nil {
 		e.encodeError(w, err)
 		return

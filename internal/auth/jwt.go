@@ -94,7 +94,7 @@ func (a *auth) Parse(token string) (jwt.MapClaims, error) {
 	return nil, nil
 }
 
-func NewJWTAuth(cfg configs.AuthConfig) (Auth, error) {
+func NewJWTAuth(cfg configs.Auth) (Auth, error) {
 	// Read and parse the private key
 	pv, err := parsePrivateKey(cfg.PrivateKeyPath)
 	if err != nil {

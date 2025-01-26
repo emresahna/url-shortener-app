@@ -9,14 +9,14 @@ import (
 )
 
 type Service interface {
-	SignupUser(context.Context, models.SignupUserRequest) (models.SignupUserResponse, error)
-	LoginUser(context.Context, models.LoginUserRequest) (models.LoginUserResponse, error)
-	Refresh(context.Context, models.RefreshTokenRequest) (models.LoginUserResponse, error)
-	Me(context.Context) (models.UserResponse, error)
-	ShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
-	RemoveUrl(context.Context, string) (models.RemoveUrlResponse, error)
-	LimitedShortenURL(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
-	RedirectUrl(context.Context, string) (string, error)
+	TokenRefresh(context.Context, models.RefreshTokenRequest) (models.LoginUserResponse, error)
+	UserMe(context.Context) (models.UserResponse, error)
+	UserSignup(context.Context, models.SignupUserRequest) (models.SignupUserResponse, error)
+	UserLogin(context.Context, models.LoginUserRequest) (models.LoginUserResponse, error)
+	UrlShortenUser(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
+	UrlRemove(context.Context, string) (models.RemoveUrlResponse, error)
+	UrlShortenGuest(context.Context, models.ShortenURLRequest) (models.ShortenURLResponse, error)
+	UrlRedirect(context.Context, string) (string, error)
 }
 
 type service struct {
