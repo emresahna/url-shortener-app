@@ -88,6 +88,13 @@ func ParseExpireTimeErr() *Error {
 	}
 }
 
+func TimeShouldNotBeEmpty() *Error {
+	return &Error{
+		Message:    "Time should not be empty.",
+		StatusCode: http.StatusBadRequest,
+	}
+}
+
 func UserNotFoundErr() *Error {
 	return &Error{
 		Message:    "User not found.",

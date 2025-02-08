@@ -26,3 +26,6 @@ deployments/redis/volumes
 # test
 cover.html
 cover.out
+
+# vscode
+.vscode

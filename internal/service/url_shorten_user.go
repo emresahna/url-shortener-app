@@ -3,13 +3,15 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
+	"time"
+
 	"github.com/EmreSahna/url-shortener-app/internal/hash"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/EmreSahna/url-shortener-app/internal/validator"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"log"
 )
 
 func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
@@ -36,9 +38,17 @@ func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLReque
 	}
 
 	// Validate duration
-	duration, err := validator.ValidateExpireDate(req.ExpireTime)
-	if err != nil {
-		return models.ShortenURLResponse{}, err
+	var duration time.Duration
+	if req.ExpireTime != nil {
+		parsedDate, err := validator.ParseDateWithTimeZone(*req.ExpireTime)
+		if err != nil {
+			return models.ShortenURLResponse{}, err
+		}
+
+		duration, err = validator.ValidateFutureDate(parsedDate)
+		if err != nil {
+			return models.ShortenURLResponse{}, err
+		}
 	}
 
 	// Shorten url
