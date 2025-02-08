@@ -32,5 +32,5 @@ sudo docker run --name url-shortener-postgres -p "5432:5432" -e POSTGRES_PASSWOR
 
 ## Start redis locally
 ```shell
-sudo docker run --name url-shortener-redis -p "6379:6379" -d redis:latest ["redis-server", "--notify-keyspace-events", "Ex"]
+sudo docker run --name url-shortener-redis -p "6379:6379" -d redis:latest redis-server --notify-keyspace-events Ex
 ```
