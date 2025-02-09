@@ -3,6 +3,8 @@ package ipaddr
 import (
 	"context"
 	"net/http"
+
+	"github.com/EmreSahna/url-shortener-app/internal/models"
 )
 
 func Middleware(next http.Handler) http.Handler {
@@ -13,7 +15,7 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "ip", ip)
+		ctx := context.WithValue(r.Context(), models.IpKey, ip)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

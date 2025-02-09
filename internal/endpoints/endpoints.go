@@ -3,11 +3,13 @@ package endpoints
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/service"
 	"github.com/go-chi/chi/v5"
-	"io"
-	"net/http"
 )
 
 type Endpoints interface {
@@ -29,6 +31,7 @@ func (e *endpoints) TokenRefreshHandler(w http.ResponseWriter, r *http.Request) 
 	var req models.RefreshTokenRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
+		e.encodeError(w, err)
 		return
 	}
 
@@ -39,7 +42,6 @@ func (e *endpoints) TokenRefreshHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	e.encodeResponse(w, resp, 200)
-	return
 }
 
 func (e *endpoints) UserMeHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,13 +52,13 @@ func (e *endpoints) UserMeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.encodeResponse(w, resp, 200)
-	return
 }
 
 func (e *endpoints) UserSignupHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.SignupUserRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
+		e.encodeError(w, err)
 		return
 	}
 
@@ -67,13 +69,13 @@ func (e *endpoints) UserSignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.encodeResponse(w, resp, 201)
-	return
 }
 
 func (e *endpoints) UserLoginHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.LoginUserRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
+		e.encodeError(w, err)
 		return
 	}
 
@@ -84,13 +86,13 @@ func (e *endpoints) UserLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.encodeResponse(w, resp, 200)
-	return
 }
 
 func (e *endpoints) UrlShortenUserHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.ShortenURLRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
+		e.encodeError(w, err)
 		return
 	}
 
@@ -101,7 +103,6 @@ func (e *endpoints) UrlShortenUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	e.encodeResponse(w, resp, 201)
-	return
 }
 
 func (e *endpoints) UrlRemoveHandler(w http.ResponseWriter, r *http.Request) {
@@ -114,13 +115,13 @@ func (e *endpoints) UrlRemoveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.encodeResponse(w, resp, 200)
-	return
 }
 
 func (e *endpoints) UrlShortenGuestHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.ShortenURLRequest
 	err := e.decodeRequest(r.Body, &req)
 	if err != nil {
+		e.encodeError(w, err)
 		return
 	}
 
@@ -131,7 +132,6 @@ func (e *endpoints) UrlShortenGuestHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	e.encodeResponse(w, resp, 201)
-	return
 }
 
 func (e *endpoints) UrlRedirectHandler(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +144,6 @@ func (e *endpoints) UrlRedirectHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.encodeResponse(w, resp, 200)
-	return
 }
 
 func NewEndpoints(s service.Service) Endpoints {
@@ -163,7 +162,11 @@ func (e *endpoints) decodeRequest(body io.ReadCloser, req interface{}) (err erro
 func (e *endpoints) encodeResponse(w http.ResponseWriter, res interface{}, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(res)
+
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		e.encodeError(w, fmt.Errorf("failed to encode response: %w", err))
+		return
+	}
 }
 
 func (e *endpoints) encodeError(w http.ResponseWriter, err error) {
@@ -171,13 +174,12 @@ func (e *endpoints) encodeError(w http.ResponseWriter, err error) {
 
 	if ok := errors.As(err, &apiErr); !ok {
 		apiErr = models.InternalServerErr()
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(apiErr.StatusCode)
-		json.NewEncoder(w).Encode(apiErr)
-		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(apiErr.StatusCode)
-	json.NewEncoder(w).Encode(apiErr)
+
+	if encodeErr := json.NewEncoder(w).Encode(*apiErr); encodeErr != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }

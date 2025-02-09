@@ -1,5 +1,12 @@
 package models
 
+type contextKey string
+
+const (
+	IpKey    contextKey = "ip"
+	TokenKey contextKey = "token"
+)
+
 type SignupUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

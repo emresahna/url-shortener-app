@@ -21,7 +21,7 @@ func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLReque
 	}
 
 	// Parse token from string
-	t := ctx.Value("token").(string)
+	t := ctx.Value(models.TokenKey).(string)
 	c, err := s.jwt.Parse(t)
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {

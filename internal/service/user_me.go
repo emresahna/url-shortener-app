@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
+
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
-	"log"
 )
 
 func (s *service) UserMe(ctx context.Context) (models.UserResponse, error) {
@@ -17,7 +18,7 @@ func (s *service) UserMe(ctx context.Context) (models.UserResponse, error) {
 	var userDB sqlc.User
 	var userUUID uuid.UUID
 
-	if token, ok := ctx.Value("token").(string); ok {
+	if token, ok := ctx.Value(models.TokenKey).(string); ok {
 		log.Printf("Getting information for user...")
 		// Parse token
 		claims, err := s.jwt.Parse(token)
@@ -55,7 +56,7 @@ func (s *service) UserMe(ctx context.Context) (models.UserResponse, error) {
 		}
 	} else {
 		log.Printf("Getting information for anynomus user...")
-		if ip, ok := ctx.Value("ip").(string); ok {
+		if ip, ok := ctx.Value(models.IpKey).(string); ok {
 			// Get URLs by IP address
 			urlsDB, err = s.db.GetUrlsByUser(ctx, sqlc.GetUrlsByUserParams{
 				IpAddress: &ip,

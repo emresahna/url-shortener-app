@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"strings"
+
+	"github.com/EmreSahna/url-shortener-app/internal/models"
 )
 
 func Middleware(next http.Handler) http.Handler {
@@ -20,7 +22,7 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "token", parts[1])
+		ctx := context.WithValue(r.Context(), models.TokenKey, parts[1])
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

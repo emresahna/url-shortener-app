@@ -3,13 +3,14 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
+	"time"
+
 	"github.com/EmreSahna/url-shortener-app/internal/hash"
 	"github.com/EmreSahna/url-shortener-app/internal/models"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/EmreSahna/url-shortener-app/internal/validator"
 	"github.com/redis/go-redis/v9"
-	"log"
-	"time"
 )
 
 const (
@@ -24,7 +25,7 @@ func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequ
 	}
 
 	// Get ip
-	ipAddr, ok := ctx.Value("ip").(string)
+	ipAddr, ok := ctx.Value(models.IpKey).(string)
 	if !ok {
 		return models.ShortenURLResponse{}, err
 	}
