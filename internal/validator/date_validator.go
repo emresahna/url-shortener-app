@@ -7,10 +7,6 @@ import (
 )
 
 func ParseDateWithTimeZone(date string) (time.Time, error) {
-	if date == "" {
-		return time.Time{}, models.TimeShouldNotBeEmpty()
-	}
-
 	dateParsed, err := time.Parse(time.RFC3339, date)
 	if err != nil {
 		return time.Time{}, models.ParseExpireTimeErr()

@@ -39,8 +39,8 @@ func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLReque
 
 	// Validate duration
 	var duration time.Duration
-	if req.ExpireTime != nil {
-		parsedDate, err := validator.ParseDateWithTimeZone(*req.ExpireTime)
+	if req.ExpireTime != "" {
+		parsedDate, err := validator.ParseDateWithTimeZone(req.ExpireTime)
 		if err != nil {
 			return models.ShortenURLResponse{}, err
 		}

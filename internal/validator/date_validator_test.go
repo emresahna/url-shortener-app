@@ -42,11 +42,6 @@ func TestParseDateWithTimeZone(t *testing.T) {
 			date:          "0120-45-12-G35:12:444+0021",
 			expectedError: models.ParseExpireTimeErr(),
 		},
-		{
-			name:          "Time is empty",
-			date:          "",
-			expectedError: models.TimeShouldNotBeEmpty(),
-		},
 	}
 
 	for _, tc := range tests {

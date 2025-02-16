@@ -179,7 +179,7 @@ func (e *endpoints) encodeError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(apiErr.StatusCode)
 
-	if encodeErr := json.NewEncoder(w).Encode(*apiErr); encodeErr != nil {
+	if encodeErr := json.NewEncoder(w).Encode(&apiErr); encodeErr != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }

@@ -18,8 +18,8 @@ type LoginUserRequest struct {
 }
 
 type ShortenURLRequest struct {
-	OriginalUrl string  `json:"original_url"`
-	ExpireTime  *string `json:"expire_time"`
+	OriginalUrl string `json:"original_url"`
+	ExpireTime  string `json:"expire_time"`
 }
 
 type RefreshTokenRequest struct {
