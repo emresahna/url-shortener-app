@@ -1,25 +1,30 @@
 package task
 
 import (
-	"context"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
-	"github.com/hibiken/asynq"
-	"log"
+	"errors"
 	"strings"
+
+	"github.com/EmreSahna/url-shortener-app/internal/logger"
+	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
+	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 )
 
-func (ts *task) IncreaseClickTask(ctx context.Context, t *asynq.Task) error {
+func (ts *task) IncreaseClickTask() {
+	ctx := ts.ctx
 	keys, _ := ts.rc.Keys(ctx, "clicks:*").Result()
 
 	for _, key := range keys {
 		count, err := ts.rc.Get(ctx, key).Int64()
-		if err != nil {
-			log.Printf("Key not found in Redis: %s\n", key)
+		if errors.Is(redis.Nil, err) {
+			logger.Log.Error("Key not found in Redis", zap.String("key", key))
+		} else if err != nil {
+			logger.Log.Error("Error while getting key from Redis", zap.String("key", key), zap.Error(err))
 		}
 
 		parts := strings.Split(key, ":")
 		if len(parts) < 2 {
-			log.Printf("Key parts are missing: %s\n", key)
+			logger.Log.Error("Key parts are missing.", zap.String("key", key))
 		}
 
 		shortCode := parts[1]
@@ -31,14 +36,14 @@ func (ts *task) IncreaseClickTask(ctx context.Context, t *asynq.Task) error {
 
 		err = ts.db.IncrementClickCount(ctx, incrementReq)
 		if err != nil {
-			log.Printf("Error while incrementing click counts: %s\n", key)
+			logger.Log.Error("Error while incrementing click counts.", zap.String("key", key), zap.Error(err))
 		}
 
 		err = ts.rc.Del(ctx, key).Err()
 		if err != nil {
-			log.Printf("Error while deleting click counts: %s\n", key)
+			logger.Log.Error("Error while deleting click counts.", zap.String("key", key), zap.Error(err))
 		}
-	}
 
-	return nil
+		logger.Log.Info("Increasing click counts is success.", zap.String("key", key))
+	}
 }

@@ -2,28 +2,40 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/EmreSahna/url-shortener-app/configs"
+	"github.com/EmreSahna/url-shortener-app/internal/logger"
 	"github.com/EmreSahna/url-shortener-app/internal/postgres"
 	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
 	"github.com/EmreSahna/url-shortener-app/internal/task"
-	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
-	"log"
-	"time"
+	"github.com/robfig/cron/v3"
+	"go.uber.org/zap"
 )
 
 func main() {
+	// initialize global logger
+	logger.InitLogger()
+	defer logger.Log.Sync()
+
+	logger.Log.Info("Application starting...")
+
+	// ctx
+	ctx := context.Background()
+
 	// load environment file
 	cfg, err := configs.LoadConfig()
 	if err != nil {
-		log.Fatal(err)
+		logger.Log.Fatal("Error while loading config", zap.Error(err))
 	}
 
 	// initialize postgres client
-	ctx := context.Background()
 	db, err := postgres.NewDBClient(ctx, cfg.Postgres)
 	if err != nil {
-		log.Fatal(err)
+		logger.Log.Fatal("Error while loading config", zap.Error(err))
 	}
 	defer db.Close(ctx)
 
@@ -35,64 +47,32 @@ func main() {
 		Addr: cfg.Redis.Address,
 		DB:   cfg.Redis.AnalyticDB,
 	})
+	defer ra.Close()
 
-	pubSub := ra.PSubscribe(ctx, "__keyevent@0__:expired")
-	ch := pubSub.Channel()
+	// Ping Redis
+	if _, err := ra.Ping(ctx).Result(); err != nil {
+		logger.Log.Fatal("Failed to connect to Redis", zap.Error(err))
+	}
 
-	defer pubSub.Close()
+	ts := task.NewTask(sc, ra, ctx)
 
-	go func() {
-		for msg := range ch {
-			now := time.Now()
-			log.Printf("Initiating soft deletion for expired URL: %s\n", msg.Payload)
-			err := sc.DeleteExpiredUrlByShortCode(context.TODO(), sqlc.DeleteExpiredUrlByShortCodeParams{
-				DeletedAt:     &now,
-				ShortenedCode: msg.Payload,
-			})
-			if err != nil {
-				log.Printf("Error during soft deletion of URL %s: %v\n", msg.Payload, err)
-			}
-			log.Printf("Soft deletion completed successfully for URL: %s\n", msg.Payload)
-		}
-	}()
+	go ts.DeleteExpiredUrl()
 
-	// initialize redis client analytics
-	rc := redis.NewClient(&redis.Options{
-		Addr: cfg.Redis.Address,
-		DB:   cfg.Redis.AnalyticDB,
-	})
+	// initialize cron
+	c := cron.New()
+	_, err = c.AddFunc("@every 10s", ts.IncreaseClickTask)
+	if err != nil {
+		logger.Log.Fatal("Failed to schedule IncreaseClickTask", zap.Error(err))
+	}
+	c.Start()
+	defer c.Stop()
 
-	ts := task.NewTask(sc, rc)
+	logger.Log.Info("Async server started...")
 
-	// initialize async server
-	srv := asynq.NewServer(asynq.RedisClientOpt{
-		Addr: cfg.Redis.Address,
-		DB:   cfg.Redis.SchedulerDB,
-	}, asynq.Config{
-		Concurrency: 10,
-	})
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	mux := asynq.NewServeMux()
-	mux.HandleFunc("click:increase", ts.IncreaseClickTask)
+	<-sigChan
 
-	go func() {
-		if err = srv.Run(mux); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	scheduler := asynq.NewScheduler(asynq.RedisClientOpt{
-		Addr: cfg.Redis.Address,
-		DB:   cfg.Redis.SchedulerDB,
-	}, nil)
-
-	_, err = scheduler.Register("@every 10s", asynq.NewTask("click:increase", nil))
-
-	go func() {
-		if err = scheduler.Run(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	select {}
+	logger.Log.Info("Shutting down gracefully...")
 }
