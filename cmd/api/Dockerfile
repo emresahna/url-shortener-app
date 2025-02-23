@@ -8,11 +8,11 @@ RUN go mod download
 
 COPY ../.. .
 
-RUN go build -o url-app ./cmd/http_server/main.go
+RUN go build -o api ./cmd/api/main.go
 
 FROM alpine:edge
 
-COPY --from=builder /app/url-app .
+COPY --from=builder /app/api .
 COPY --from=builder /app/configs/ssl/ .
 
-CMD ["./url-app"]
+CMD ["./api"]

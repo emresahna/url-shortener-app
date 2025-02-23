@@ -3,9 +3,10 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/EmreSahna/url-shortener-app/configs"
-	"github.com/redis/go-redis/v9"
 	"time"
+
+	"github.com/emresahna/url-shortener-app/configs"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -27,7 +28,7 @@ type store struct {
 	rcc *redis.Client
 }
 
-func NewRedisClient(cfg configs.Redis, db int) (Store, error) {
+func New(cfg configs.Redis, db int) (Store, error) {
 	rcc := redis.NewClient(&redis.Options{
 		Addr:         cfg.Address,
 		DB:           db,

@@ -1,4 +1,4 @@
-module github.com/EmreSahna/url-shortener-app
+module github.com/emresahna/url-shortener-app
 
 go 1.23.1
 

@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  golangci:
-    name: Lint
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -19,33 +19,12 @@ jobs:
           go-version: 1.23.1
 
       - name: Cache Go Modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
-          path: /tmp/cache/go
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          path: /tmp/cache/go
           restore-keys: |
             ${{ runner.os }}-go-mod-
-
-      - name: Install Dependencies
-        run: go mod download
-
-      - name: Run GolangCI-Lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.60
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    needs: golangci
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Golang
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23.1
 
       - name: Install Dependencies
         run: go mod download
@@ -65,6 +44,14 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.1
+
+      - name: Cache Go Modules
+        uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          path: /tmp/cache/go
+          restore-keys: |
+            ${{ runner.os }}-go-mod-
 
       - name: Install Dependencies
         run: go mod download

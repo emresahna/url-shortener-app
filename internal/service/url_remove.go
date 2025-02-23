@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
-	"github.com/EmreSahna/url-shortener-app/internal/models"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/emresahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
+	"github.com/google/uuid"
 )
 
 func (s *service) UrlRemove(ctx context.Context, id string) (res models.RemoveUrlResponse, err error) {

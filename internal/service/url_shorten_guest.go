@@ -3,13 +3,12 @@ package service
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
-	"github.com/EmreSahna/url-shortener-app/internal/hash"
-	"github.com/EmreSahna/url-shortener-app/internal/models"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
-	"github.com/EmreSahna/url-shortener-app/internal/validator"
+	"github.com/emresahna/url-shortener-app/internal/hash"
+	"github.com/emresahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
+	"github.com/emresahna/url-shortener-app/internal/validator"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -49,7 +48,6 @@ func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequ
 	// Save to redis
 	redisCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting to save limited shorten URL %s to Redis...", shortenUrl)
 		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, freeTierDuration)
 		if err != nil {
 			redisCh <- models.SaveToCacheErr()
@@ -60,7 +58,6 @@ func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequ
 	// Save to db
 	dbCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting to save limited shorten URL %s to PostgreSQL...", shortenUrl)
 		savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
 			OriginalUrl:   req.OriginalUrl,
 			ShortenedCode: shortenUrl,
@@ -80,7 +77,6 @@ func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequ
 	// Increase free usage
 	usageCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting to increase free usage for %s...", ipAddr)
 		if isFirstUsage {
 			err = s.rcc.SetIpAddrUsage(ctx, ipAddr)
 			if err != nil {
@@ -99,17 +95,14 @@ func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequ
 	if err = <-dbCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
-	log.Printf("Successfully saved limited shorten URL %s to Redis.", shortenUrl)
 
 	if err = <-redisCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
-	log.Printf("Successfully saved limited shorten URL %s to PostgreSQL.", shortenUrl)
 
 	if err = <-usageCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
-	log.Printf("Successfully increased free usage for %s.", ipAddr)
 
 	// Return
 	return models.ShortenURLResponse{

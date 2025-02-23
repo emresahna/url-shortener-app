@@ -1,14 +1,10 @@
 package endpoints
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
 	"net/http"
 
-	"github.com/EmreSahna/url-shortener-app/internal/models"
-	"github.com/EmreSahna/url-shortener-app/internal/service"
+	"github.com/emresahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/service"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -25,6 +21,12 @@ type Endpoints interface {
 
 type endpoints struct {
 	s service.Service
+}
+
+func New(s service.Service) Endpoints {
+	return &endpoints{
+		s: s,
+	}
 }
 
 func (e *endpoints) TokenRefreshHandler(w http.ResponseWriter, r *http.Request) {
@@ -144,42 +146,4 @@ func (e *endpoints) UrlRedirectHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	e.encodeResponse(w, resp, 200)
-}
-
-func NewEndpoints(s service.Service) Endpoints {
-	return &endpoints{
-		s: s,
-	}
-}
-
-func (e *endpoints) decodeRequest(body io.ReadCloser, req interface{}) (err error) {
-	if err := json.NewDecoder(body).Decode(req); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (e *endpoints) encodeResponse(w http.ResponseWriter, res interface{}, statusCode int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		e.encodeError(w, fmt.Errorf("failed to encode response: %w", err))
-		return
-	}
-}
-
-func (e *endpoints) encodeError(w http.ResponseWriter, err error) {
-	var apiErr *models.Error
-
-	if ok := errors.As(err, &apiErr); !ok {
-		apiErr = models.InternalServerErr()
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(apiErr.StatusCode)
-
-	if encodeErr := json.NewEncoder(w).Encode(&apiErr); encodeErr != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
 }

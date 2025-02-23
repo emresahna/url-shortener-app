@@ -1,18 +1,19 @@
 package handler
 
 import (
-	"github.com/EmreSahna/url-shortener-app/configs"
-	"github.com/EmreSahna/url-shortener-app/internal/endpoints"
-	"github.com/EmreSahna/url-shortener-app/internal/middleware/bearer"
-	"github.com/EmreSahna/url-shortener-app/internal/middleware/ipaddr"
-	"github.com/EmreSahna/url-shortener-app/internal/service"
+	"net/http"
+
+	"github.com/emresahna/url-shortener-app/configs"
+	"github.com/emresahna/url-shortener-app/internal/endpoints"
+	"github.com/emresahna/url-shortener-app/internal/middleware/bearer"
+	"github.com/emresahna/url-shortener-app/internal/middleware/ipaddr"
+	"github.com/emresahna/url-shortener-app/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
-	"net/http"
 )
 
-func NewHttpHandler(s service.Service, cfg configs.Cors) http.Handler {
-	ep := endpoints.NewEndpoints(s)
+func NewHTTP(s service.Service, cfg configs.Cors) http.Handler {
+	ep := endpoints.New(s)
 
 	r := chi.NewRouter()
 

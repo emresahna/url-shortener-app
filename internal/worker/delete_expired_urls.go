@@ -1,16 +1,16 @@
-package task
+package worker
 
 import (
 	"time"
 
-	"github.com/EmreSahna/url-shortener-app/internal/logger"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
+	"github.com/emresahna/url-shortener-app/internal/logger"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
 	"go.uber.org/zap"
 )
 
-func (ts *task) DeleteExpiredUrl() {
-	ctx := ts.ctx
-	pubSub := ts.rc.PSubscribe(ctx, "__keyevent@0__:expired")
+func (w *worker) DeleteExpiredUrls() {
+	ctx := w.ctx
+	pubSub := w.rc.PSubscribe(ctx, "__keyevent@0__:expired")
 	ch := pubSub.Channel()
 
 	defer pubSub.Close()
@@ -18,7 +18,7 @@ func (ts *task) DeleteExpiredUrl() {
 	for msg := range ch {
 		now := time.Now()
 		logger.Log.Info("Initiating soft deletion for expired URL.", zap.String("url", msg.Payload))
-		err := ts.db.DeleteExpiredUrlByShortCode(ctx, sqlc.DeleteExpiredUrlByShortCodeParams{
+		err := w.db.DeleteExpiredUrlByShortCode(ctx, sqlc.DeleteExpiredUrlByShortCodeParams{
 			DeletedAt:     &now,
 			ShortenedCode: msg.Payload,
 		})

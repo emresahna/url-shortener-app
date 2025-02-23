@@ -1,21 +1,21 @@
-package task
+package scheduler
 
 import (
 	"errors"
 	"strings"
 
-	"github.com/EmreSahna/url-shortener-app/internal/logger"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
+	"github.com/emresahna/url-shortener-app/internal/logger"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
-func (ts *task) IncreaseClickTask() {
-	ctx := ts.ctx
-	keys, _ := ts.rc.Keys(ctx, "clicks:*").Result()
+func (s *scheduler) IncreaseClicks() {
+	ctx := s.ctx
+	keys, _ := s.rc.Keys(ctx, "clicks:*").Result()
 
 	for _, key := range keys {
-		count, err := ts.rc.Get(ctx, key).Int64()
+		count, err := s.rc.Get(ctx, key).Int64()
 		if errors.Is(redis.Nil, err) {
 			logger.Log.Error("Key not found in Redis", zap.String("key", key))
 		} else if err != nil {
@@ -34,12 +34,12 @@ func (ts *task) IncreaseClickTask() {
 			TotalClicks:   count,
 		}
 
-		err = ts.db.IncrementClickCount(ctx, incrementReq)
+		err = s.db.IncrementClickCount(ctx, incrementReq)
 		if err != nil {
 			logger.Log.Error("Error while incrementing click counts.", zap.String("key", key), zap.Error(err))
 		}
 
-		err = ts.rc.Del(ctx, key).Err()
+		err = s.rc.Del(ctx, key).Err()
 		if err != nil {
 			logger.Log.Error("Error while deleting click counts.", zap.String("key", key), zap.Error(err))
 		}

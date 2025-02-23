@@ -6,19 +6,18 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/EmreSahna/url-shortener-app/configs"
-	"github.com/EmreSahna/url-shortener-app/internal/logger"
-	"github.com/EmreSahna/url-shortener-app/internal/postgres"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
-	"github.com/EmreSahna/url-shortener-app/internal/task"
+	"github.com/emresahna/url-shortener-app/configs"
+	"github.com/emresahna/url-shortener-app/internal/logger"
+	"github.com/emresahna/url-shortener-app/internal/postgres"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
+	"github.com/emresahna/url-shortener-app/internal/worker"
 	"github.com/redis/go-redis/v9"
-	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 )
 
 func main() {
 	// initialize global logger
-	logger.InitLogger()
+	logger.Init()
 	defer logger.Log.Sync()
 
 	logger.Log.Info("Application starting...")
@@ -27,15 +26,15 @@ func main() {
 	ctx := context.Background()
 
 	// load environment file
-	cfg, err := configs.LoadConfig()
+	cfg, err := configs.Load()
 	if err != nil {
 		logger.Log.Fatal("Error while loading config", zap.Error(err))
 	}
 
 	// initialize postgres client
-	db, err := postgres.NewDBClient(ctx, cfg.Postgres)
+	db, err := postgres.New(ctx, cfg.Postgres)
 	if err != nil {
-		logger.Log.Fatal("Error while loading config", zap.Error(err))
+		logger.Log.Fatal("Error while connecting posgres", zap.Error(err))
 	}
 	defer db.Close(ctx)
 
@@ -54,20 +53,11 @@ func main() {
 		logger.Log.Fatal("Failed to connect to Redis", zap.Error(err))
 	}
 
-	ts := task.NewTask(sc, ra, ctx)
+	w := worker.New(sc, ra, ctx)
 
-	go ts.DeleteExpiredUrl()
+	go w.DeleteExpiredUrls()
 
-	// initialize cron
-	c := cron.New()
-	_, err = c.AddFunc("@every 10s", ts.IncreaseClickTask)
-	if err != nil {
-		logger.Log.Fatal("Failed to schedule IncreaseClickTask", zap.Error(err))
-	}
-	c.Start()
-	defer c.Stop()
-
-	logger.Log.Info("Async server started...")
+	logger.Log.Info("Worker server started...")
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)

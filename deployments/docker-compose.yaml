@@ -1,27 +1,26 @@
 services:
-  shortener-app:
+  api:
     build:
       context: ..
-      dockerfile: cmd/http_server/Dockerfile
+      dockerfile: cmd/api/Dockerfile
     env_file: base.env
     ports:
-      - "8000"
+      - "8001"
     depends_on:
       - postgres
       - redis
     networks:
       - app_network
     deploy:
-      replicas: 2
       resources:
         limits:
           cpus: '0.5'
           memory: 512M
 
-  shortener-scheduler:
+  scheduler:
     build:
       context: ..
-      dockerfile: cmd/async_server/Dockerfile
+      dockerfile: cmd/scheduler/Dockerfile
     env_file: base.env
     depends_on:
       - postgres
@@ -29,7 +28,22 @@ services:
     networks:
       - app_network
     deploy:
-      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  worker:
+    build:
+      context: ..
+      dockerfile: cmd/worker/Dockerfile
+    env_file: base.env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app_network
+    deploy:
       resources:
         limits:
           cpus: '0.5'
@@ -105,7 +119,9 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - shortener-app
+      - api
+      - scheduler
+      - worker
     networks:
       - app_network
     deploy:

@@ -5,12 +5,13 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/EmreSahna/url-shortener-app/configs"
-	"github.com/EmreSahna/url-shortener-app/internal/models"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
-	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"time"
+
+	"github.com/emresahna/url-shortener-app/configs"
+	"github.com/emresahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
@@ -94,7 +95,7 @@ func (a *auth) Parse(token string) (jwt.MapClaims, error) {
 	return nil, nil
 }
 
-func NewJWTAuth(cfg configs.Auth) (Auth, error) {
+func NewJWT(cfg configs.Auth) (Auth, error) {
 	// Read and parse the private key
 	pv, err := parsePrivateKey(cfg.PrivateKeyPath)
 	if err != nil {

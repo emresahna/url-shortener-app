@@ -3,8 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/EmreSahna/url-shortener-app/internal/models"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
+
+	"github.com/emresahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
 	"golang.org/x/crypto/bcrypt"
 )
 

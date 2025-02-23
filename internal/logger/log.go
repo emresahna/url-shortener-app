@@ -9,7 +9,7 @@ import (
 
 var Log *zap.Logger
 
-func InitLogger() {
+func Init() {
 	cfg := zap.NewProductionConfig()
 	cfg.EncoderConfig.TimeKey = "date"
 	cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder

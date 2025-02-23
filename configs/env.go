@@ -2,10 +2,11 @@ package configs
 
 import (
 	"errors"
-	"github.com/caarlos0/env/v11"
-	"github.com/joho/godotenv"
 	"io/fs"
 	"time"
+
+	"github.com/caarlos0/env/v11"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -53,7 +54,7 @@ type Cors struct {
 	AllowedHeaders []string `env:"ALLOWED_HEADERS"`
 }
 
-func LoadConfig() (*Config, error) {
+func Load() (*Config, error) {
 	err := godotenv.Load()
 	if !errors.Is(err, fs.ErrNotExist) && err != nil {
 		return nil, err

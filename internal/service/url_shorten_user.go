@@ -3,13 +3,12 @@ package service
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
-	"github.com/EmreSahna/url-shortener-app/internal/hash"
-	"github.com/EmreSahna/url-shortener-app/internal/models"
-	"github.com/EmreSahna/url-shortener-app/internal/sqlc"
-	"github.com/EmreSahna/url-shortener-app/internal/validator"
+	"github.com/emresahna/url-shortener-app/internal/hash"
+	"github.com/emresahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/sqlc"
+	"github.com/emresahna/url-shortener-app/internal/validator"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -57,7 +56,6 @@ func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLReque
 	// Save to redis
 	redisCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting to save shortened URL %s to Redis...", shortenUrl)
 		err = s.rcc.SetUrlWithExpire(ctx, shortenUrl, req.OriginalUrl, duration)
 		if err != nil {
 			redisCh <- models.SaveToCacheErr()
@@ -68,7 +66,6 @@ func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLReque
 	// Save to db
 	dbCh := make(chan error, 1)
 	go func() {
-		log.Printf("Starting to save shortened URL %s to PostgreSQL...", shortenUrl)
 		savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
 			OriginalUrl:   req.OriginalUrl,
 			ShortenedCode: shortenUrl,
@@ -88,12 +85,10 @@ func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLReque
 	if err = <-dbCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
-	log.Printf("Successfully saved shortened URL %s to Redis.", shortenUrl)
 
 	if err = <-redisCh; err != nil {
 		return models.ShortenURLResponse{}, err
 	}
-	log.Printf("Successfully saved shortened URL %s to PostgreSQL.", shortenUrl)
 
 	// Return
 	return models.ShortenURLResponse{

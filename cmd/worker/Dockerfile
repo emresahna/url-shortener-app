@@ -8,12 +8,12 @@ RUN go mod download
 
 COPY ../.. .
 
-RUN go build -o url-scheduler ./cmd/async_server/main.go
+RUN go build -o worker ./cmd/worker/main.go
 
 FROM alpine:edge
 
-COPY --from=builder /app/url-scheduler .
+COPY --from=builder /app/worker .
 
 EXPOSE 3000
 
-CMD ["./url-scheduler"]
+CMD ["./worker"]

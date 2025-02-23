@@ -3,11 +3,12 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/EmreSahna/url-shortener-app/configs"
+
+	"github.com/emresahna/url-shortener-app/configs"
 	"github.com/jackc/pgx/v4"
 )
 
-func NewDBClient(ctx context.Context, cfg configs.Postgres) (*pgx.Conn, error) {
+func New(ctx context.Context, cfg configs.Postgres) (*pgx.Conn, error) {
 	connDSN := fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
 

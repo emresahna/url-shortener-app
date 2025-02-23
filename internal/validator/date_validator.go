@@ -3,7 +3,7 @@ package validator
 import (
 	"time"
 
-	"github.com/EmreSahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/models"
 )
 
 func ParseDateWithTimeZone(date string) (time.Time, error) {

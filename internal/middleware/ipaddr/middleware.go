@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/EmreSahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/models"
 )
 
 func Middleware(next http.Handler) http.Handler {

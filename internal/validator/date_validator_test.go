@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/EmreSahna/url-shortener-app/internal/models"
+	"github.com/emresahna/url-shortener-app/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 
