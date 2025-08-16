@@ -7,6 +7,11 @@ const (
 	TokenKey contextKey = "token"
 )
 
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type SignupUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

@@ -17,6 +17,9 @@ type Endpoints interface {
 	UrlRemoveHandler(w http.ResponseWriter, r *http.Request)
 	UrlShortenGuestHandler(w http.ResponseWriter, r *http.Request)
 	UrlRedirectHandler(w http.ResponseWriter, r *http.Request)
+	HealthCheckHandler(w http.ResponseWriter, r *http.Request)
+	ReadinessCheckHandler(w http.ResponseWriter, r *http.Request)
+	LivenessCheckHandler(w http.ResponseWriter, r *http.Request)
 }
 
 type endpoints struct {
@@ -27,6 +30,36 @@ func New(s service.Service) Endpoints {
 	return &endpoints{
 		s: s,
 	}
+}
+
+func (e *endpoints) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	resp, err := e.s.HealthCheck(r.Context())
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, http.StatusOK)
+}
+
+func (e *endpoints) ReadinessCheckHandler(w http.ResponseWriter, r *http.Request) {
+	resp, err := e.s.ReadinessCheck(r.Context())
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, http.StatusOK)
+}
+
+func (e *endpoints) LivenessCheckHandler(w http.ResponseWriter, r *http.Request) {
+	resp, err := e.s.LivenessCheck(r.Context())
+	if err != nil {
+		e.encodeError(w, err)
+		return
+	}
+
+	e.encodeResponse(w, resp, http.StatusOK)
 }
 
 func (e *endpoints) TokenRefreshHandler(w http.ResponseWriter, r *http.Request) {
