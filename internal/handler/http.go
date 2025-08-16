@@ -2,9 +2,7 @@
 package handler
 
 import (
-	"context"
 	"net/http"
-	"time"
 
 	"github.com/emresahna/url-shortener-app/configs"
 	_ "github.com/emresahna/url-shortener-app/internal/docs"
@@ -13,7 +11,6 @@ import (
 	"github.com/emresahna/url-shortener-app/internal/middleware/ipaddr"
 	"github.com/emresahna/url-shortener-app/internal/service"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -24,25 +21,11 @@ func NewHTTP(s service.Service, cfg configs.Cors) http.Handler {
 	r := chi.NewRouter()
 
 	// Middleware
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: cfg.AllowedOrigins,
 		AllowedMethods: cfg.AllowedMethods,
 		AllowedHeaders: cfg.AllowedHeaders,
 	}))
-
-	// Add request timestamp to context
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			ctx = context.WithValue(ctx, "requestTime", time.Now().Format(time.RFC3339))
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	})
 
 	// Health check endpoints
 	r.Get("/health", ep.HealthCheckHandler)
@@ -51,7 +34,7 @@ func NewHTTP(s service.Service, cfg configs.Cors) http.Handler {
 
 	// Swagger documentation
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"), // The URL pointing to API definition
+		httpSwagger.URL("/swagger/doc.json"),
 	))
 
 	// API versioning with v1 prefix

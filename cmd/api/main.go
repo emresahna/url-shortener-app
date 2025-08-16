@@ -9,6 +9,7 @@ import (
 
 	"github.com/emresahna/url-shortener-app/configs"
 	"github.com/emresahna/url-shortener-app/internal/auth"
+	_ "github.com/emresahna/url-shortener-app/internal/docs"
 	"github.com/emresahna/url-shortener-app/internal/handler"
 	"github.com/emresahna/url-shortener-app/internal/logger"
 	"github.com/emresahna/url-shortener-app/internal/postgres"
