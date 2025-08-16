@@ -18,7 +18,7 @@ func (s *service) TokenRefresh(ctx context.Context, req models.RefreshTokenReque
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
 			return models.LoginUserResponse{}, models.TokenExpiredErr()
-		} else if err != nil {
+		} else {
 			return models.LoginUserResponse{}, models.TokenFailureErr()
 		}
 	}

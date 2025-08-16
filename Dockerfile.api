@@ -1,0 +1,32 @@
+FROM golang:1.23.1-alpine AS builder
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the API service
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o api ./cmd/api/main.go
+
+# Final stage
+FROM alpine:3.18
+
+# Install ca-certificates for HTTPS requests
+RUN apk --no-cache add ca-certificates tzdata
+
+WORKDIR /root/
+
+# Copy the binary from builder stage
+COPY --from=builder /app/api .
+
+# Copy SSL configs if they exist
+COPY --from=builder /app/configs/ssl/ ./ssl/
+
+# Expose port (adjust as needed)
+EXPOSE 8080
+
+CMD ["./api"]

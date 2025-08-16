@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+README.md
+*.md
+
+# Development files
+.vscode
+.idea
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+test/
+tests/
+
+# Deployment files (keep only what's needed)
+deployments/
+!deployments/migrations/
+!deployments/scripts/
+
+# Local environment files
+.env.local
+.env.development
+.env.test

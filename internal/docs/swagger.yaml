@@ -1,0 +1,371 @@
+definitions:
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  models.HealthResponse:
+    properties:
+      status:
+        type: string
+      timestamp:
+        type: string
+      version:
+        type: string
+    type: object
+  models.LoginUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  models.LoginUserResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  models.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  models.RemoveUrlResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  models.ShortenURLRequest:
+    properties:
+      expire_time:
+        type: string
+      original_url:
+        type: string
+    type: object
+  models.ShortenURLResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  models.SignupUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  models.SignupUserResponse:
+    properties:
+      info:
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      urls:
+        items:
+          $ref: '#/definitions/models.UserUrls'
+        type: array
+      username:
+        type: string
+    type: object
+  models.UserUrls:
+    properties:
+      click_count:
+        type: integer
+      id:
+        type: string
+      is_active:
+        type: boolean
+      is_deleted:
+        type: boolean
+      original_url:
+        type: string
+      url:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /{code}:
+    get:
+      description: Redirect to the original URL using the shortened code
+      parameters:
+      - description: Shortened URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "302":
+          description: Redirect to original URL
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "410":
+          description: URL expired
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Redirect to original URL
+      tags:
+      - url
+  /api/v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh an expired access token using a refresh token
+      parameters:
+      - description: Refresh token request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Refresh access token
+      tags:
+      - auth
+  /api/v1/url/{id}:
+    delete:
+      description: Delete a shortened URL by ID (only owner can delete)
+      parameters:
+      - description: URL ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RemoveUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove/delete a shortened URL
+      tags:
+      - url
+  /api/v1/url/shorten:
+    post:
+      consumes:
+      - application/json
+      description: Create a shortened URL for an authenticated user
+      parameters:
+      - description: URL shorten request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ShortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ShortenURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Shorten URL for authenticated user
+      tags:
+      - url
+  /api/v1/url/shorten/guest:
+    post:
+      consumes:
+      - application/json
+      description: Create a shortened URL without authentication (guest mode)
+      parameters:
+      - description: URL shorten request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ShortenURLRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ShortenURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Shorten URL for guest user
+      tags:
+      - url
+  /api/v1/user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return access/refresh tokens
+      parameters:
+      - description: User login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: User login
+      tags:
+      - user
+  /api/v1/user/me:
+    get:
+      description: Get the current authenticated user's profile and URLs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user information
+      tags:
+      - user
+  /api/v1/user/signup:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: User signup request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignupUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SignupUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - user
+  /health:
+    get:
+      description: Check if the service is healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Health check endpoint
+      tags:
+      - health
+  /health/live:
+    get:
+      description: Check if the service is alive
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Liveness check endpoint
+      tags:
+      - health
+  /health/ready:
+    get:
+      description: Check if the service is ready to accept requests
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Readiness check endpoint
+      tags:
+      - health
+swagger: "2.0"
