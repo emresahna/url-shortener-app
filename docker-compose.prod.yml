@@ -11,14 +11,6 @@ services:
       - redis
     networks:
       - app_network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.25'
-          memory: 256M
 
   scheduler:
     build:
@@ -30,14 +22,6 @@ services:
       - redis
     networks:
       - app_network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.1'
-          memory: 128M
 
   worker:
     build:
@@ -49,14 +33,6 @@ services:
       - redis
     networks:
       - app_network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.1'
-          memory: 128M
 
   postgres:
     image: postgres:15-alpine
@@ -69,11 +45,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./deploy/postgres/init-scripts:/docker-entrypoint-initdb.d
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
 
   pgbouncer:
     image: edoburu/pgbouncer
@@ -84,11 +55,6 @@ services:
       - postgres
     networks:
       - app_network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
 
   redis:
     image: redis:7-alpine
@@ -96,18 +62,12 @@ services:
       - app_network
     volumes:
       - redis_data:/data
-    command: ["redis-server", "--notify-keyspace-events", "Ex"]
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+    command: [ "redis-server", "--notify-keyspace-events", "Ex" ]
 
   migrate:
     image: arigaio/atlas:latest
     command: >
-      migrate apply
-      --url postgres://url-shortener-db-user:url-shortener-db-pass@pgbouncer:6432/url-shortener-db?sslmode=disable
+      migrate apply --url postgres://url-shortener-db-user:url-shortener-db-pass@pgbouncer:6432/url-shortener-db?sslmode=disable
     depends_on:
       - pgbouncer
     networks:
@@ -125,11 +85,6 @@ services:
       - api
     networks:
       - app_network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
 
 networks:
   app_network:
