@@ -16,12 +16,21 @@ type Service interface {
 	LivenessCheck(ctx context.Context) (models.HealthResponse, error)
 	UrlRedirect(ctx context.Context, code string) (string, error)
 	UrlRemove(ctx context.Context, id string) (models.RemoveUrlResponse, error)
-	UrlShortenGuest(ctx context.Context, req models.ShortenURLRequest) (models.ShortenURLResponse, error)
-	UrlShortenUser(ctx context.Context, req models.ShortenURLRequest) (models.ShortenURLResponse, error)
+	UrlShortenGuest(
+		ctx context.Context,
+		req models.ShortenURLRequest,
+	) (models.ShortenURLResponse, error)
+	UrlShortenUser(
+		ctx context.Context,
+		req models.ShortenURLRequest,
+	) (models.ShortenURLResponse, error)
 	UserLogin(ctx context.Context, req models.LoginUserRequest) (models.LoginUserResponse, error)
 	UserSignup(ctx context.Context, req models.SignupUserRequest) (models.SignupUserResponse, error)
 	UserMe(ctx context.Context) (models.UserResponse, error)
-	TokenRefresh(ctx context.Context, req models.RefreshTokenRequest) (models.LoginUserResponse, error)
+	TokenRefresh(
+		ctx context.Context,
+		req models.RefreshTokenRequest,
+	) (models.LoginUserResponse, error)
 }
 
 // service implements the auth Service interface

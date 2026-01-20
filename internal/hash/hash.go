@@ -1,16 +1,15 @@
 package hash
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"time"
 )
 
 const (
 	base62Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-)
-
-var (
-	r = rand.New(rand.NewSource(time.Now().Unix()))
+	chunkSize   = 5
+	codeLength  = 7
 )
 
 func toBase62(num int) string {
@@ -18,14 +17,13 @@ func toBase62(num int) string {
 }
 
 func GenerateUniqueCode() string {
-	chunkSize := 5
-	var result string
-	for i := 0; i < 7; i++ {
-		var sum int
-		for i := 0; i < chunkSize; i++ {
-			sum += r.Intn(100)
+	result := ""
+	for range codeLength {
+		sum := 0
+		for range chunkSize {
+			r, _ := rand.Int(rand.Reader, big.NewInt(time.Now().Unix()))
+			sum += int(r.Int64())
 		}
-
 		result += toBase62(sum)
 	}
 

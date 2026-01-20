@@ -30,7 +30,7 @@ type store struct {
 
 func New(cfg configs.Redis, db int) (Store, error) {
 	rcc := redis.NewClient(&redis.Options{
-		Addr:         cfg.Address,
+		Addr:         cfg.RedisAddress,
 		DB:           db,
 		PoolSize:     cfg.PoolSize,
 		MinIdleConns: cfg.MinIdleConns,
@@ -51,7 +51,12 @@ func (c *store) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (c *store) SetUrlWithExpire(ctx context.Context, shortenUrl string, originalUrl string, expireTime time.Duration) error {
+func (c *store) SetUrlWithExpire(
+	ctx context.Context,
+	shortenUrl string,
+	originalUrl string,
+	expireTime time.Duration,
+) error {
 	err := c.rcc.Set(ctx, shortenUrl, originalUrl, expireTime).Err()
 	if err != nil {
 		return err

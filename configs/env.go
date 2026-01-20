@@ -18,7 +18,7 @@ type Config struct {
 }
 
 type Http struct {
-	Address        string        `env:"SERVER_ADDRESS"`
+	HttpAddress    string        `env:"SERVER_ADDRESS"`
 	WriteTimeout   time.Duration `env:"SERVER_WRITE_TIMEOUT"`
 	ReadTimeout    time.Duration `env:"SERVER_READ_TIMEOUT"`
 	IdleTimeout    time.Duration `env:"SERVER_IDLE_TIMEOUT"`
@@ -35,7 +35,7 @@ type Postgres struct {
 }
 
 type Redis struct {
-	Address      string `env:"REDIS_ADDRESS"`
+	RedisAddress string `env:"REDIS_ADDRESS"`
 	CacheDB      int    `env:"REDIS_CACHE_DB"`
 	AnalyticDB   int    `env:"REDIS_ANALYTIC_DB"`
 	SchedulerDB  int    `env:"REDIS_SCHEDULER_DB"`

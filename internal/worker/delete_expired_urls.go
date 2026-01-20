@@ -13,7 +13,7 @@ func (w *worker) DeleteExpiredUrls() {
 	pubSub := w.rc.PSubscribe(ctx, "__keyevent@0__:expired")
 	ch := pubSub.Channel()
 
-	defer pubSub.Close()
+	defer func() { _ = pubSub.Close() }()
 
 	for msg := range ch {
 		now := time.Now()
@@ -23,8 +23,15 @@ func (w *worker) DeleteExpiredUrls() {
 			ShortenedCode: msg.Payload,
 		})
 		if err != nil {
-			logger.Log.Error("Error during soft deletion of URL", zap.String("url", msg.Payload), zap.Error(err))
+			logger.Log.Error(
+				"Error during soft deletion of URL",
+				zap.String("url", msg.Payload),
+				zap.Error(err),
+			)
 		}
-		logger.Log.Info("Soft deletion completed successfully for URL.", zap.String("url", msg.Payload))
+		logger.Log.Info(
+			"Soft deletion completed successfully for URL.",
+			zap.String("url", msg.Payload),
+		)
 	}
 }

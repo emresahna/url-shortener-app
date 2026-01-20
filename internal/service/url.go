@@ -53,7 +53,10 @@ func (s *service) UrlRedirect(ctx context.Context, code string) (res string, err
 }
 
 // UrlRemove removes a URL by its ID
-func (s *service) UrlRemove(ctx context.Context, id string) (res models.RemoveUrlResponse, err error) {
+func (s *service) UrlRemove(
+	ctx context.Context,
+	id string,
+) (res models.RemoveUrlResponse, err error) {
 	// Parse url id
 	urlUUID, err := uuid.Parse(id)
 	if err != nil {
@@ -86,7 +89,10 @@ func (s *service) UrlRemove(ctx context.Context, id string) (res models.RemoveUr
 }
 
 // UrlShortenGuest shortens URL for guest users (with free tier limitations)
-func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+func (s *service) UrlShortenGuest(
+	ctx context.Context,
+	req models.ShortenURLRequest,
+) (res models.ShortenURLResponse, err error) {
 	// Validate url
 	if !validator.ValidateURL(req.OriginalUrl) {
 		return models.ShortenURLResponse{}, models.UrlNotValidErr()
@@ -180,7 +186,10 @@ func (s *service) UrlShortenGuest(ctx context.Context, req models.ShortenURLRequ
 }
 
 // UrlShortenUser shortens URL for authenticated users
-func (s *service) UrlShortenUser(ctx context.Context, req models.ShortenURLRequest) (res models.ShortenURLResponse, err error) {
+func (s *service) UrlShortenUser(
+	ctx context.Context,
+	req models.ShortenURLRequest,
+) (res models.ShortenURLResponse, err error) {
 	// Validate url
 	if !validator.ValidateURL(req.OriginalUrl) {
 		return models.ShortenURLResponse{}, models.UrlNotValidErr()

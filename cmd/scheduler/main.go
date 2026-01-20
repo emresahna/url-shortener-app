@@ -19,7 +19,7 @@ import (
 func main() {
 	// initialize global logger
 	logger.Init()
-	defer logger.Log.Sync()
+	defer func() { _ = logger.Log.Sync() }()
 
 	logger.Log.Info("Application starting...")
 
@@ -37,17 +37,17 @@ func main() {
 	if err != nil {
 		logger.Log.Fatal("Error while connecting postgres", zap.Error(err))
 	}
-	defer db.Close(ctx)
+	defer func() { _ = db.Close(ctx) }()
 
 	// initialize sqlc client
 	sc := sqlc.New(db)
 
 	// initialize redis client cache
 	ra := redis.NewClient(&redis.Options{
-		Addr: cfg.Redis.Address,
-		DB:   cfg.Redis.AnalyticDB,
+		Addr: cfg.RedisAddress,
+		DB:   cfg.AnalyticDB,
 	})
-	defer ra.Close()
+	defer func() { _ = ra.Close() }()
 
 	// Ping Redis
 	if _, err := ra.Ping(ctx).Result(); err != nil {

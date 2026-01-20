@@ -41,7 +41,7 @@ func TestHealthCheck(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected.Status, result.Status)
 			assert.Equal(t, tt.expected.Version, result.Version)
-			
+
 			// Verify timestamp format
 			_, parseErr := time.Parse(time.RFC3339, result.Timestamp)
 			assert.NoError(t, parseErr)
@@ -125,11 +125,10 @@ func TestLivenessCheck(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected.Status, result.Status)
 			assert.Equal(t, tt.expected.Version, result.Version)
-			
+
 			// Verify timestamp format
 			_, parseErr := time.Parse(time.RFC3339, result.Timestamp)
 			assert.NoError(t, parseErr)
 		})
 	}
 }
-

@@ -22,7 +22,7 @@ import (
 func main() {
 	// initialize global logger
 	logger.Init()
-	defer logger.Log.Sync()
+	defer func() { _ = logger.Log.Sync() }()
 
 	logger.Log.Info("Application starting...")
 
@@ -39,13 +39,13 @@ func main() {
 	}
 
 	// initialize redis client for cache
-	rcc, err := redis.New(cfg.Redis, cfg.Redis.CacheDB)
+	rcc, err := redis.New(cfg.Redis, cfg.CacheDB)
 	if err != nil {
 		logger.Log.Fatal("Error while initializing redis for cache", zap.Error(err))
 	}
 
 	// initialize redis client for analytics
-	rca, err := redis.New(cfg.Redis, cfg.Redis.AnalyticDB)
+	rca, err := redis.New(cfg.Redis, cfg.AnalyticDB)
 	if err != nil {
 		logger.Log.Fatal("Error while initializing redis for analytics", zap.Error(err))
 	}
@@ -56,7 +56,7 @@ func main() {
 	if err != nil {
 		logger.Log.Fatal("Error while initializing postgres", zap.Error(err))
 	}
-	defer db.Close(ctx)
+	defer func() { _ = db.Close(ctx) }()
 
 	// initialize sqlc client
 	sc := sqlc.New(db)
@@ -70,15 +70,15 @@ func main() {
 	// initialize http server
 	hs := http.Server{
 		Handler:        h,
-		Addr:           cfg.Http.Address,
-		ReadTimeout:    cfg.Http.ReadTimeout,
-		WriteTimeout:   cfg.Http.WriteTimeout,
-		IdleTimeout:    cfg.Http.IdleTimeout,
-		MaxHeaderBytes: cfg.Http.MaxHeaderBytes,
+		Addr:           cfg.HttpAddress,
+		ReadTimeout:    cfg.ReadTimeout,
+		WriteTimeout:   cfg.WriteTimeout,
+		IdleTimeout:    cfg.IdleTimeout,
+		MaxHeaderBytes: cfg.MaxHeaderBytes,
 	}
 
 	go func() {
-		logger.Log.Info("HTTP server running.", zap.String("address", cfg.Http.Address))
+		logger.Log.Info("HTTP server running.", zap.String("address", cfg.HttpAddress))
 		if err = hs.ListenAndServe(); err != nil {
 			logger.Log.Fatal("Error while starting http server", zap.Error(err))
 		}

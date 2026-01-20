@@ -14,7 +14,10 @@ import (
 )
 
 // UserLogin authenticates a user and returns login response with tokens
-func (s *service) UserLogin(ctx context.Context, req models.LoginUserRequest) (res models.LoginUserResponse, err error) {
+func (s *service) UserLogin(
+	ctx context.Context,
+	req models.LoginUserRequest,
+) (res models.LoginUserResponse, err error) {
 	// Get user from db
 	user, err := s.db.GetUserByUsername(ctx, req.Username)
 	if err != nil {
@@ -39,7 +42,10 @@ func (s *service) UserLogin(ctx context.Context, req models.LoginUserRequest) (r
 }
 
 // UserSignup creates a new user account
-func (s *service) UserSignup(ctx context.Context, req models.SignupUserRequest) (res models.SignupUserResponse, err error) {
+func (s *service) UserSignup(
+	ctx context.Context,
+	req models.SignupUserRequest,
+) (res models.SignupUserResponse, err error) {
 	// Check username already taken
 	exists, err := s.db.UserExists(ctx, req.Username)
 	if err != nil {

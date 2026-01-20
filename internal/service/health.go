@@ -20,17 +20,17 @@ func (s *service) HealthCheck(ctx context.Context) (models.HealthResponse, error
 func (s *service) ReadinessCheck(ctx context.Context) (models.HealthResponse, error) {
 	// In a real application, you would check database connections,
 	// cache availability, and other dependencies
-	
+
 	// Check database connection
 	if s.db == nil {
 		return models.HealthResponse{}, models.InternalServerErr()
 	}
-	
+
 	// Check Redis cache connection
 	if s.rcc == nil {
 		return models.HealthResponse{}, models.InternalServerErr()
 	}
-	
+
 	return models.HealthResponse{
 		Status:    "ready",
 		Version:   "1.0.0",

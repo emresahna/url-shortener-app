@@ -8,9 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var mockNow = time.Date(2025, time.January, 0, 0, 0, 0, 0, time.UTC)
-var mockFuture = time.Date(2699, time.January, 0, 0, 0, 0, 0, time.UTC)
-var mockEarly = time.Date(1453, time.January, 0, 0, 0, 0, 0, time.UTC)
+var (
+	mockNow    = time.Date(2025, time.January, 0, 0, 0, 0, 0, time.UTC)
+	mockFuture = time.Date(2699, time.January, 0, 0, 0, 0, 0, time.UTC)
+	mockEarly  = time.Date(1453, time.January, 0, 0, 0, 0, 0, time.UTC)
+)
 
 func TestParseDateWithTimeZone(t *testing.T) {
 	tests := []struct {

@@ -19,7 +19,11 @@ func (s *scheduler) IncreaseClicks() {
 		if errors.Is(redis.Nil, err) {
 			logger.Log.Error("Key not found in Redis", zap.String("key", key))
 		} else if err != nil {
-			logger.Log.Error("Error while getting key from Redis", zap.String("key", key), zap.Error(err))
+			logger.Log.Error(
+				"Error while getting key from Redis",
+				zap.String("key", key),
+				zap.Error(err),
+			)
 		}
 
 		parts := strings.Split(key, ":")
@@ -36,12 +40,20 @@ func (s *scheduler) IncreaseClicks() {
 
 		err = s.db.IncrementClickCount(ctx, incrementReq)
 		if err != nil {
-			logger.Log.Error("Error while incrementing click counts.", zap.String("key", key), zap.Error(err))
+			logger.Log.Error(
+				"Error while incrementing click counts.",
+				zap.String("key", key),
+				zap.Error(err),
+			)
 		}
 
 		err = s.rc.Del(ctx, key).Err()
 		if err != nil {
-			logger.Log.Error("Error while deleting click counts.", zap.String("key", key), zap.Error(err))
+			logger.Log.Error(
+				"Error while deleting click counts.",
+				zap.String("key", key),
+				zap.Error(err),
+			)
 		}
 
 		logger.Log.Info("Increasing click counts is success.", zap.String("key", key))

@@ -12,7 +12,10 @@ import (
 )
 
 // TokenRefresh refreshes an access token using a refresh token
-func (s *service) TokenRefresh(ctx context.Context, req models.RefreshTokenRequest) (res models.LoginUserResponse, err error) {
+func (s *service) TokenRefresh(
+	ctx context.Context,
+	req models.RefreshTokenRequest,
+) (res models.LoginUserResponse, err error) {
 	// Parse refresh token
 	claims, err := s.jwt.Parse(req.RefreshToken)
 	if err != nil {
