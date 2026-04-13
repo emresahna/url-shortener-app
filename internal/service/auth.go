@@ -7,7 +7,7 @@ import (
 	"github.com/emresahna/url-shortener-app/internal/sqlc"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/pkg/errors"
 )
 

@@ -11,7 +11,8 @@ import (
 	"github.com/emresahna/url-shortener-app/internal/validator"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -77,7 +78,7 @@ func (s *service) UrlRemove(
 	// Soft delete from db
 	now := time.Now()
 	if err = s.db.DeleteExpiredUrlByShortCode(ctx, sqlc.DeleteExpiredUrlByShortCodeParams{
-		DeletedAt:     &now,
+		DeletedAt:     pgtype.Timestamp{Time: now, Valid: true},
 		ShortenedCode: code,
 	}); err != nil {
 		return models.RemoveUrlResponse{}, err
@@ -245,7 +246,7 @@ func (s *service) UrlShortenUser(
 		savedUrl, err := s.db.CreateURL(ctx, sqlc.CreateURLParams{
 			OriginalUrl:   req.OriginalUrl,
 			ShortenedCode: shortenUrl,
-			UserID:        &userUUID,
+			UserID:        pgtype.UUID{Bytes: userUUID, Valid: true},
 		})
 		if err != nil {
 			dbCh <- models.CreateURLErr()

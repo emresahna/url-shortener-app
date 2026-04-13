@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/emresahna/url-shortener-app/configs"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 func New(ctx context.Context, cfg configs.Postgres) (*pgx.Conn, error) {
@@ -15,10 +15,6 @@ func New(ctx context.Context, cfg configs.Postgres) (*pgx.Conn, error) {
 	config, err := pgx.ParseConfig(connDSN)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse connection string: %v", err)
-	}
-
-	if cfg.DetailedLogging {
-		config.LogLevel = pgx.LogLevelTrace
 	}
 
 	conn, err := pgx.ConnectConfig(ctx, config)

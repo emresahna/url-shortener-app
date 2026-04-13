@@ -9,7 +9,8 @@ import (
 	"github.com/emresahna/url-shortener-app/internal/sqlc"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -112,7 +113,7 @@ func (s *service) UserMe(ctx context.Context) (models.UserResponse, error) {
 
 		// Get links from db
 		urlsDB, err = s.db.GetUrlsByUser(ctx, sqlc.GetUrlsByUserParams{
-			UserID:    &userUUID,
+			UserID:    pgtype.UUID{Bytes: userUUID, Valid: true},
 			IpAddress: nil,
 		})
 		if err != nil {
@@ -123,7 +124,7 @@ func (s *service) UserMe(ctx context.Context) (models.UserResponse, error) {
 			// Get URLs by IP address
 			urlsDB, err = s.db.GetUrlsByUser(ctx, sqlc.GetUrlsByUserParams{
 				IpAddress: &ip,
-				UserID:    nil,
+				UserID:    pgtype.UUID{Valid: false},
 			})
 			if err != nil {
 				return models.UserResponse{}, err

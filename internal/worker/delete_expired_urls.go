@@ -5,6 +5,7 @@ import (
 
 	"github.com/emresahna/url-shortener-app/internal/logger"
 	"github.com/emresahna/url-shortener-app/internal/sqlc"
+	"github.com/jackc/pgx/v5/pgtype"
 	"go.uber.org/zap"
 )
 
@@ -19,7 +20,7 @@ func (w *worker) DeleteExpiredUrls() {
 		now := time.Now()
 		logger.Log.Info("Initiating soft deletion for expired URL.", zap.String("url", msg.Payload))
 		err := w.db.DeleteExpiredUrlByShortCode(ctx, sqlc.DeleteExpiredUrlByShortCodeParams{
-			DeletedAt:     &now,
+			DeletedAt:     pgtype.Timestamp{Time: now, Valid: true},
 			ShortenedCode: msg.Payload,
 		})
 		if err != nil {
