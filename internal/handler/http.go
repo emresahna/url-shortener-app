@@ -12,6 +12,7 @@ import (
 	"github.com/emresahna/url-shortener-app/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -31,6 +32,9 @@ func NewHTTP(s service.Service, cfg configs.Cors) http.Handler {
 	r.Get("/health", ep.HealthCheckHandler)
 	r.Get("/health/ready", ep.ReadinessCheckHandler)
 	r.Get("/health/live", ep.LivenessCheckHandler)
+
+	// Prometheus metrics
+	r.Handle("/metrics", promhttp.Handler())
 
 	// Swagger documentation
 	r.Get("/swagger/*", httpSwagger.Handler(

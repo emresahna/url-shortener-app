@@ -180,6 +180,8 @@ func (s *service) UrlShortenGuest(
 		return models.ShortenURLResponse{}, err
 	}
 
+	ShorteningsTotal.WithLabelValues("guest").Inc()
+
 	// Return
 	return models.ShortenURLResponse{
 		Url: shortenUrl,

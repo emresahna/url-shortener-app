@@ -7,6 +7,19 @@ import (
 	"github.com/emresahna/url-shortener-app/internal/models"
 	"github.com/emresahna/url-shortener-app/internal/redis"
 	"github.com/emresahna/url-shortener-app/internal/sqlc"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
+
+var (
+	RedirectionsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "url_shortener_redirections_total",
+		Help: "The total number of URL redirections",
+	})
+	ShorteningsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "url_shortener_shortenings_total",
+		Help: "The total number of URL shortenings",
+	}, []string{"type"})
 )
 
 // Service defines the complete service interface
