@@ -35,14 +35,14 @@ type Service interface {
 
 // service implements the auth Service interface
 type service struct {
-	db  *sqlc.Queries
+	db  sqlc.Querier
 	rcc redis.Store
 	jwt auth.Auth
 	rca redis.Store
 }
 
 // NewService creates a new auth service
-func New(db *sqlc.Queries, rcc redis.Store, jwt auth.Auth, rca redis.Store) Service {
+func New(db sqlc.Querier, rcc redis.Store, jwt auth.Auth, rca redis.Store) Service {
 	return &service{
 		db:  db,
 		rcc: rcc,
