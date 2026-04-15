@@ -12,12 +12,12 @@ type Worker interface {
 }
 
 type worker struct {
-	db  *sqlc.Queries
+	db  sqlc.Querier
 	rc  *redis.Client
 	ctx context.Context
 }
 
-func New(db *sqlc.Queries, rc *redis.Client, ctx context.Context) Worker {
+func New(db sqlc.Querier, rc *redis.Client, ctx context.Context) Worker {
 	return &worker{
 		db:  db,
 		rc:  rc,

@@ -28,4 +28,5 @@ cover.html
 cover.out
 
 # vscode
-.vscode
+.vscode/
+reports/

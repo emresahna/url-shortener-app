@@ -12,12 +12,12 @@ type Scheduler interface {
 }
 
 type scheduler struct {
-	db  *sqlc.Queries
+	db  sqlc.Querier
 	rc  *redis.Client
 	ctx context.Context
 }
 
-func New(db *sqlc.Queries, rc *redis.Client, ctx context.Context) Scheduler {
+func New(db sqlc.Querier, rc *redis.Client, ctx context.Context) Scheduler {
 	return &scheduler{
 		db:  db,
 		rc:  rc,
